@@ -17,7 +17,6 @@ class Project(Base):
     vin_interpret = Column(String(50))
     file_format = Column(String(100))
     file_location = Column(String(100))
-    last_processed = Column(String(100))
 
     reference = relationship("Reference", back_populates="project")
     ecu_scan = relationship("Ecu_scan", back_populates="project")
@@ -48,5 +47,6 @@ class Ecu_scan(Base):
     filename = Column(String(100))
     date= Column(String(100))
     project_id= Column(UUID(as_uuid=True), ForeignKey("project.id"))
+    process_time= Column(String(100))
 
     project = relationship("Project", back_populates="ecu_scan")

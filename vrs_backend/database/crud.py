@@ -1,3 +1,4 @@
+import uuid
 from sqlalchemy.orm import Session
 
 from . import models
@@ -5,10 +6,10 @@ from . import schemas
 
 
 def create_project(db: Session, project: schemas.ProjectCreate):
-    db_project = models.Project(id=project.id, company_name=project.company_name, vehicle_name=project.vehicle_name,
-                                location=project.location, date=project.date, status=project.status,
+    db_project = models.Project(id=uuid.uuid1(), company_name=project.company_name, vehicle_name=project.vehicle_name,
+                                location=project.location, date=project.date, status="In Progress",
                                 vin_interpret=project.vin_interpret, file_format=project.file_format,
-                                file_location=project.file_location, last_processed=project.last_processed)
+                                file_location="string")
     db.add(db_project)
     db.commit()
     db.refresh(db_project)
