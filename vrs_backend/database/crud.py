@@ -1,8 +1,17 @@
 import uuid
 from sqlalchemy.orm import Session
-
 from . import models
 from . import schemas
+
+def saveECUScanResults(db: Session, ECUScanResults):
+
+    for esr in ECUScanResults:
+        db_ecuscandata = models.Ecu_scan(id=uuid.uuid4(), vin=esr.vin, sign_found=esr.sign_found,
+                                sign_ref=esr.sign_ref, filename=esr.filename, verified_status=esr.verified_status,
+                                verified = esr.verified, verified_ts=esr.verified_ts, flash_error = esr.flashingerror,
+                                project_id=esr.project_id)
+        db.add(db_ecuscandata)
+    db.commit()        
 
 
 def create_project(db: Session, project: schemas.ProjectCreate):
@@ -17,7 +26,7 @@ def create_project(db: Session, project: schemas.ProjectCreate):
 
 
 def create_reference_data(db: Session, ref: schemas.ReferenceCreate):
-    db_ref = models.Reference(id=ref.id, ecu_name=ref.ecu_name,
+    db_ref = models.Reference(id=uuid.uuid4(), ecu_name=ref.ecu_name,
                               ecu_signature=ref.ecu_signature, parameter_name=ref.parameter_name,
                               verification_method=ref.verification_method, tag_1=ref.tag_1, tag_2=ref.tag_2,
                               tag_interpret=ref.tag_interpret, project_id=ref.project_id)
