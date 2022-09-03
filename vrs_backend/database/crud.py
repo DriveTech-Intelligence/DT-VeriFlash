@@ -34,3 +34,14 @@ def create_reference_data(db: Session, ref: schemas.ReferenceCreate):
     db.commit()
     db.refresh(db_ref)
     return db_ref
+
+def save_reference_data(db: Session, refs):
+    
+    for ref in refs:
+        db_ref = models.Reference(id=uuid.uuid4(), ecu_name=ref.ecu_name,
+                                ecu_signature=ref.ecu_signature, parameter_name=ref.parameter_name,
+                                verification_method=ref.verification_method, tag_1=ref.tag_1, tag_2=ref.tag_2,
+                                tag_interpret=ref.tag_interpret, project_id=ref.project_id)
+        db.add(db_ref)
+    db.commit()
+    
