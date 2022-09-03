@@ -1,5 +1,6 @@
 import uuid
 from sqlalchemy.orm import Session
+from sqlalchemy import MetaData 
 from . import models
 from . import schemas
 
@@ -35,8 +36,11 @@ def create_reference_data(db: Session, ref: schemas.ReferenceCreate):
     db.refresh(db_ref)
     return db_ref
 
-def save_reference_data(db: Session, refs):
-    
+def save_reference_data(db: Session, refs,project_id:uuid.UUID):
+
+    db.query(models.Reference).filter(models.Reference.project_id==project_id).delete() #remove all old ref_data
+
+    #add new ref data
     for ref in refs:
         db_ref = models.Reference(id=uuid.uuid4(), ecu_name=ref.ecu_name,
                                 ecu_signature=ref.ecu_signature, parameter_name=ref.parameter_name,
