@@ -6,7 +6,7 @@ from . import schemas
 
 
 def create_project(db: Session, project: schemas.ProjectCreate):
-    db_project = models.Project(id=uuid.uuid1(), company_name=project.company_name, vehicle_name=project.vehicle_name,
+    db_project = models.Project(id=uuid.uuid4(), company_name=project.company_name, vehicle_name=project.vehicle_name,
                                 location=project.location, date=project.date, status="In Progress",
                                 vin_interpret=project.vin_interpret, file_format=project.file_format,
                                 file_location="string")

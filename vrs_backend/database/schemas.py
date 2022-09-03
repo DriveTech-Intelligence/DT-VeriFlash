@@ -18,21 +18,24 @@ class ReferenceCreate(BaseModel):
         orm_mode = True
 
 class Reference(ReferenceCreate):
-    id: UUID = Field(default_factory=uuid.uuid1())
+    id: UUID = Field(default_factory=uuid.uuid4())
 
 class Ecu_scanCreate(BaseModel):
     vin: str 
     sign_found: str
     sign_ref: str
-    status: str
+    verified:bool
+    verified_status:str
+    flash_error:bool
     filename: str
-    date: datetime = Field(default_factory=datetime.now)
+    project_id: UUID = Field(default_factory=uuid.uuid4())
+    verified_ts: datetime
 
     class Config:
         orm_mode = True
 
 class Ecu_scan(Ecu_scanCreate):
-    id: UUID = Field(default_factory=uuid.uuid1())
+    id: UUID = Field(default_factory=uuid.uuid4())
 
 class ProjectCreate(BaseModel):
     company_name: str
@@ -48,7 +51,7 @@ class ProjectCreate(BaseModel):
         orm_mode = True
 
 class Project(ProjectCreate):
-    id: UUID = Field(default_factory=uuid.uuid1())
+    id: UUID = Field(default_factory=uuid.uuid4())
     file_location: str
     status: str
     class Config:
