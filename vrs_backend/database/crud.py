@@ -14,6 +14,8 @@ def saveECUScanResults(db: Session, ECUScanResults):
         db.add(db_ecuscandata)
     db.commit()        
 
+def get_project(db: Session, project_id: uuid.UUID):
+    return db.query(models.Project).filter(models.Project.id == project_id).first()
 
 def create_project(db: Session, project: schemas.ProjectCreate):
     db_project = models.Project(id=uuid.uuid4(), company_name=project.company_name, vehicle_name=project.vehicle_name,
@@ -48,4 +50,9 @@ def save_reference_data(db: Session, refs,project_id:uuid.UUID):
                                 tag_interpret=ref.tag_interpret, project_id=ref.project_id)
         db.add(db_ref)
     db.commit()
-    
+
+def get_reference_data(db: Session, project_id:uuid.UUID):
+    return db.query(models.Reference).filter(models.Reference.project_id == project_id)    
+
+def get_flash_stats(db: Session, project_id:uuid.UUID):
+    return db.query(models.Ecu_scan).filter(models.Ecu_scan.project_id == project_id)    
