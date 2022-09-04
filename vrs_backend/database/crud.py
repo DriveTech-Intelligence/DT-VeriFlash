@@ -38,18 +38,23 @@ def create_reference_data(db: Session, ref: schemas.ReferenceCreate):
     db.refresh(db_ref)
     return db_ref
 
-def save_reference_data(db: Session, refs,project_id:uuid.UUID):
+def save_reference_data(db: Session, refData,project_id:uuid.UUID):
 
     db.query(models.Reference).filter(models.Reference.project_id==project_id).delete() #remove all old ref_data
+    ref :schemas.ReferenceCreate
 
     #add new ref data
-    for ref in refs:
+    for record in range(len(refData)):
+        refData.loc[record, "project_id"] = project_id
+        ref = refData.loc[record]
         db_ref = models.Reference(id=uuid.uuid4(), ecu_name=ref.ecu_name,
                                 ecu_signature=ref.ecu_signature, parameter_name=ref.parameter_name,
                                 verification_method=ref.verification_method, tag_1=ref.tag_1, tag_2=ref.tag_2,
                                 tag_interpret=ref.tag_interpret, project_id=ref.project_id)
         db.add(db_ref)
     db.commit()
+
+
 
 def get_reference_data(db: Session, project_id:uuid.UUID):
     return db.query(models.Reference).filter(models.Reference.project_id == project_id)    

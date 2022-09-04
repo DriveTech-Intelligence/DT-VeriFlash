@@ -47,11 +47,12 @@ async def uplaodReferencefile(file: UploadFile, project_id="3fa85f64-5717-4562-b
     refD = ReferenceData(file)
     refD.printFile()
     content = await refD.create_ref()
-    for record in range(len(content)):
-        content.loc[record, "id"] = uuid4()
-        content.loc[record, "project_id"] = project_id
-        createReferenceData(db=db, ref=content.loc[record])
-    return {"filename": file.filename}
+    crud.save_reference_data(db,content,project_id)
+    # for record in range(len(content)):
+    #     content.loc[record, "id"] = uuid4()
+    #     content.loc[record, "project_id"] = project_id
+    #     createReferenceData(db=db, ref=content.loc[record])
+    # return {"filename": file.filename}
 
 
 @app.post("/project/", response_model=schemas.ProjectCreate)
