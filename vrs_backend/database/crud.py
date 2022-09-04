@@ -51,7 +51,7 @@ def save_reference_data(db: Session, refData, project_id: uuid.UUID):
 
 
 def get_reference_data(db: Session, project_id: uuid.UUID):
-    return db.query(models.Reference).filter(models.Reference.project_id == project_id)
+    return db.query(models.Reference).filter(models.Reference.project_id == project_id).all()
 
 #####################VehiclaScanReport#############################
 

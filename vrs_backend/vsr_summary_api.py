@@ -62,7 +62,7 @@ async def uploadReferencefile(file: UploadFile, project_id="3fa85f64-5717-4562-b
 @app.post("/get-vsr-files")
 def getVsrFiles(vsrFolder: str, project_id: str, db: Session = Depends(get_db)):
     proj = FlashProject(project_id)
-    proj.processVSRFiles()
+    proj.processVSRFiles(db)
     result = proj.getFlashingStatus()
     
     #convert result to JSON, and send it in response

@@ -3,8 +3,8 @@ import platform
 import scandata
 #from vrs_backend import database
 from database import crud
-from vrs_backend.VSRFile import getScanData
-from vrs_backend.database import schemas
+from VSRFile import getScanData
+from database import schemas
 import os
 
 class FlashProject:
@@ -21,7 +21,7 @@ class FlashProject:
         ecu_scan = crud.get_lastECUProcessedTS(db,self.__project_id)
         lastVSRProcessedDate = ecu_scan.verified_ts
         VSRFiles = self.getFilesToProcess(lastVSRProcessedDate)
-        refData = self.getRefData()
+        refData = self.getRefData(db)
 
         for f in VSRFiles:
             objScanData = getScanData(f, self.__project.file_format)
@@ -51,8 +51,17 @@ class FlashProject:
         return VSRFiles
 
     def getRefData(self,db):
+        refData = {}
+        tempEcu = ''
         rawRefData = crud.get_reference_data(db,self.__project_id)
-        #convert to internal data structure - dictionary
+        for ref in rawRefData:
+            if ref.ecu_name != tempEcu:
+                refData[ref.ecu_name] = [ref]
+                tempEcu = ref.ecu_name
+            else:
+                refData[tempEcu].append(ref)
+        return refData
+        
 
     def saveScanResults(db,scanResults):
         crud.saveECUScanResults(db,scanResults)
