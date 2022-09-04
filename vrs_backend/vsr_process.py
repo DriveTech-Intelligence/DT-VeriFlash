@@ -24,3 +24,41 @@ class ReferenceData:
         return df
 
 
+class ScanData:
+    def __init__(self) -> None:
+        pass
+    def verify(refData):
+        pass
+    def __verifyECU(self,ecu,refData):
+        pass
+
+class VSRProject:
+    def __init__(self, project_id) -> None:
+        self.__loadfromDB(project_id)
+    def __loadfromDB(self, id):
+        pass
+    def saveScanResults(self):
+        pass
+    def processVSRFiles(self):
+        pass
+    def getFilesToProcess(self):
+        pass
+    def getRefData(self):
+        pass
+    def saveScanResults(self,scanResults):
+        pass
+    def getFlashingStatus(self):
+        pass
+
+
+class PDFFile(VSRProject):
+    def __init__(self, project_id):
+        super().__init__(project_id)
+        self.vsrFiles = []
+    def getFilesToProcess(self,vsrFolder):
+        self.vsrFiles
+        print(vsrFolder)
+        # pass
+    def processVSRFiles(self):
+        print(self.vsrFiles)
+        pass

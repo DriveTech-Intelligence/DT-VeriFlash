@@ -1,6 +1,6 @@
 from uuid import uuid4
 from fastapi import Request, FastAPI, UploadFile
-from vsr_process import ReferenceData
+from vsr_process import PDFFile, ReferenceData
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
@@ -34,27 +34,27 @@ def get_db():
     finally:
         db.close()
 
-def createReferenceData(ref: schemas.ReferenceCreate, db: Session = Depends(get_db)):
-    return crud.create_reference_data(db=db, ref=ref)
-
-
+###########################DB-INIT##########################
 # @app.post("/db-init")
 # def dbInit():
 
+###########################Project############################
+@app.post("/project/", response_model=schemas.ProjectCreate)
+def createProject(project: schemas.ProjectCreate,  db: Session = Depends(get_db)):
+    return crud.create_project(db=db, project=project)
 
+############################Reference#############################
 @app.post("/upload-reference-file")
-async def uplaodReferencefile(file: UploadFile, project_id="3fa85f64-5717-4562-b3fc-2c963f66afa6", db: Session = Depends(get_db)):
+async def uploadReferencefile(file: UploadFile, project_id="3fa85f64-5717-4562-b3fc-2c963f66afa6", db: Session = Depends(get_db)):
     refD = ReferenceData(file)
     refD.printFile()
     content = await refD.create_ref()
     crud.save_reference_data(db,content,project_id)
-    # for record in range(len(content)):
-    #     content.loc[record, "id"] = uuid4()
-    #     content.loc[record, "project_id"] = project_id
-    #     createReferenceData(db=db, ref=content.loc[record])
-    # return {"filename": file.filename}
 
-
-@app.post("/project/", response_model=schemas.ProjectCreate)
-def createProject(project: schemas.ProjectCreate,  db: Session = Depends(get_db)):
-    return crud.create_project(db=db, project=project)
+############################Vehicle-Scan-Report########################
+@app.post("/get-vsr-files")
+def getVsrFiles(vsrFolder: str, project_id: str, db: Session = Depends(get_db)):
+    pdfobj = PDFFile(project_id)
+    pdfobj.getFilesToProcess(vsrFolder)
+    pdfobj.processVSRFiles()
+    # return crud.saveECUScanResults(db=db, ECUScanResults=vsr)
