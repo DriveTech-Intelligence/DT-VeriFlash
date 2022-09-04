@@ -2,6 +2,7 @@ from curses import raw
 import scandata
 #from vrs_backend import database
 from database import crud
+from VSRFile import getScanData
 
 class FlashProject:
     def __init__(self, id) -> None:
@@ -10,6 +11,7 @@ class FlashProject:
 
     def loadfromDB(self,db):
         self.__project = crud.get_project(db,self.__project_id)
+        return self.__project
 
     def processVSRFiles(db):
         # lastVSRProcessedDate = get the last processed date from ECU_Scan table

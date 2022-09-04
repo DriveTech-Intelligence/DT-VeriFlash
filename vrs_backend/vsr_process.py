@@ -1,7 +1,7 @@
 from abc import abstractmethod
 import pandas as pd
 
-from vrs_backend.database import crud
+from database import crud
 
 
 class ReferenceData:
@@ -28,14 +28,5 @@ class ReferenceData:
         return df
 
 
-class ScanData:
-    def __init__(self):
-        pass
-
-    def verify(self, vsr, refData):
-        pass
-
-    def __verifyECU(self, ecu, refData):
-        pass
 
 

@@ -14,10 +14,10 @@ class ECUFlashResult():
     projectID:uuid
 
 class ScanData:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, vsr):
+        self.vsr = vsr
 
-    def verify(refData):
+    def verify(self, refData):
         pass
 
     def __verifyECU(self,ecu,refData):

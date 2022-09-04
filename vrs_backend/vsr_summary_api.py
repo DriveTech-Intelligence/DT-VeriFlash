@@ -1,7 +1,7 @@
 from uuid import uuid4
 from fastapi import Request, FastAPI, UploadFile
-from vrs_backend.flashProject import FlashProject
-from vsr_process import PDFFile, ReferenceData, ScanData, VSRProject
+from flashProject import FlashProject
+from vsr_process import ReferenceData
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session

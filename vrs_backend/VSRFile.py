@@ -1,4 +1,9 @@
 from abc import abstractmethod, ABC
+import os
+import pdfplumber
+import pandas as pd
+from scandata import ScanData
+
 
 class VSR_File(ABC):
     @abstractmethod
@@ -9,27 +14,47 @@ class VSR_File(ABC):
     def loadVSR():
         pass
 
+
 class PDFVSRFile(VSR_File):
     def __init__(self, filepath) -> None:
         super().__init__()
         self.__filepath = filepath
+
+    def loadVSR(self):
+        pdf = pdfplumber.open(self.__filepath)
+        tables = []
+        tablesDict = {}
+        tempEcuName = ""
+
+        for page in pdf.pages:
+            tables.extend(page.extract_table())
+
+        tablesDf = pd.DataFrame(tables[1:], columns=tables[0])
+        tablesDf.drop(['Active'], axis=1)
+
+        for index in range(len(tablesDf)):
+            if tablesDf['EcuName'][index] != "":
+                tempEcuName = tablesDf['EcuName'][index]
+                tablesDict[tablesDf['EcuName'][index]] = [(
+                    tablesDf['Parameter'][index], tablesDf['Value'][index])]
+            else:
+                tablesDict[tempEcuName].append((
+                    tablesDf['Parameter'][index], tablesDf['Value'][index]))
+        
+        return ScanData(tablesDict)
     
-    def loadVSR():
-        #PDF parsing logic to return the ScanData obj
-        pass
 
 #global function
+
+
 def getScanData(filepath, file_format):
     vsrObj = None
-    if file_format  == 'PDFVSRFile':
+    if file_format == 'PDFVSRFile':
         vsrObj = PDFVSRFile(filepath)
         # if format ('HTMLVSR')
         #     vsrObj = HTMLVSR(filepath)
-    if(vsrObj is not None):
-        return vsrObj.load()
+    if (vsrObj is not None):
+        return vsrObj.loadVSR()
     else:
-        #raise error - unsupported VSR file
-        raise()
-
-
-
+        # raise error - unsupported VSR file
+        raise ()
