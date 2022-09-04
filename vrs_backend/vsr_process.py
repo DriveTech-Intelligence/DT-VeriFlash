@@ -1,3 +1,4 @@
+from abc import abstractmethod
 import pandas as pd
 
 class ReferenceData:
@@ -35,14 +36,17 @@ class ScanData:
 class VSRProject:
     def __init__(self, project_id) -> None:
         self.__loadfromDB(project_id)
+        self.vsrFiles = []
     def __loadfromDB(self, id):
         pass
     def saveScanResults(self):
         pass
+    @abstractmethod
     def processVSRFiles(self):
         pass
-    def getFilesToProcess(self):
-        pass
+    def getFilesToProcess(self, vsrFolder):
+        print(vsrFolder)
+        return "pdf"
     def getRefData(self):
         pass
     def saveScanResults(self,scanResults):
@@ -54,11 +58,6 @@ class VSRProject:
 class PDFFile(VSRProject):
     def __init__(self, project_id):
         super().__init__(project_id)
-        self.vsrFiles = []
-    def getFilesToProcess(self,vsrFolder):
-        self.vsrFiles
-        print(vsrFolder)
-        # pass
     def processVSRFiles(self):
-        print(self.vsrFiles)
-        pass
+        # print(self.vsrFiles)
+        return self.vsrFiles

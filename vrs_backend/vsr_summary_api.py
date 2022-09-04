@@ -1,6 +1,6 @@
 from uuid import uuid4
 from fastapi import Request, FastAPI, UploadFile
-from vsr_process import PDFFile, ReferenceData
+from vsr_process import PDFFile, ReferenceData, VSRProject
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
@@ -54,7 +54,9 @@ async def uploadReferencefile(file: UploadFile, project_id="3fa85f64-5717-4562-b
 ############################Vehicle-Scan-Report########################
 @app.post("/get-vsr-files")
 def getVsrFiles(vsrFolder: str, project_id: str, db: Session = Depends(get_db)):
-    pdfobj = PDFFile(project_id)
-    pdfobj.getFilesToProcess(vsrFolder)
-    pdfobj.processVSRFiles()
+    vsrObj = VSRProject(project_id)
+    extension = vsrObj.getFilesToProcess(vsrFolder)
+
+    if extension == "pdf":
+        vsr = PDFFile.processVSRFiles(self=vsrObj)
     # return crud.saveECUScanResults(db=db, ECUScanResults=vsr)
