@@ -1,6 +1,8 @@
 from abc import abstractmethod
 import pandas as pd
 
+from vrs_backend.database import crud
+
 
 class ReferenceData:
     def __init__(self, rFile):
@@ -37,36 +39,3 @@ class ScanData:
         pass
 
 
-class VSRProject:
-    def __init__(self, project_id) -> None:
-        self.__loadfromDB(project_id)
-        self.vsrFiles = []
-
-    def __loadfromDB(self, project_id):
-        pass
-
-    @abstractmethod
-    def processVSRFiles(self):
-        pass
-
-    def getFilesToProcess(self, vsrFolder):
-        print(vsrFolder)
-        return "pdf"
-
-    def getRefData(self, project_id):
-        pass
-
-    def saveScanResults(self, scanResults):
-        pass
-
-    def getFlashingStatus(self):
-        pass
-
-
-class PDFFile(VSRProject):
-    def __init__(self, project_id):
-        super().__init__(project_id)
-
-    def processVSRFiles(self):
-        # print(self.vsrFiles)
-        return self.vsrFiles

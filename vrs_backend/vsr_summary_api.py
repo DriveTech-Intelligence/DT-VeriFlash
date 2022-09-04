@@ -1,5 +1,6 @@
 from uuid import uuid4
 from fastapi import Request, FastAPI, UploadFile
+from vrs_backend.flashProject import FlashProject
 from vsr_process import PDFFile, ReferenceData, ScanData, VSRProject
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Depends, FastAPI, HTTPException
@@ -60,16 +61,9 @@ async def uploadReferencefile(file: UploadFile, project_id="3fa85f64-5717-4562-b
 
 @app.post("/get-vsr-files")
 def getVsrFiles(vsrFolder: str, project_id: str, db: Session = Depends(get_db)):
-    vsrObj = VSRProject(project_id)
-    extension = vsrObj.getFilesToProcess(vsrFolder)
-    refData = vsrObj.getRefData(project_id)
-
-    if extension == "pdf":
-        pdfobj = PDFFile(project_id)
-        vsr = pdfobj.processVSRFiles()
-        print(vsr)
-
-    scanDObj = ScanData()
-    ecuScanResults = scanDObj.verify(vsr, refData)
+    proj = FlashProject(project_id)
+    proj.processVSRFiles()
+    result = proj.getFlashingStatus()
     
-    # return crud.saveECUScanResults(db=db, ECUScanResults=ecuScanResults)
+    #convert result to JSON, and send it in response
+    

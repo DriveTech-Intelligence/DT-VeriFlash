@@ -4,6 +4,15 @@ from sqlalchemy import MetaData
 from . import models
 from . import schemas
 
+def saveECUScanResults(db: Session, ECUScanResults):
+    esr :schemas.Ecu_scanCreate
+    for esr in ECUScanResults:
+        db_ecuscandata = models.Ecu_scan(id=uuid.uuid4(), vin=esr.vin, sign_found=esr.sign_found,
+                                sign_ref=esr.sign_ref, filename=esr.filename, verified_status=esr.verified_status,
+                                verified = esr.verified, verified_ts=esr.verified_ts, flash_error = esr.flashingerror,
+                                project_id=esr.project_id)
+        db.add(db_ecuscandata)
+    db.commit()        
 
 ################Project##########################
 def get_project(db: Session, project_id: uuid.UUID):
@@ -45,18 +54,6 @@ def get_reference_data(db: Session, project_id: uuid.UUID):
     return db.query(models.Reference).filter(models.Reference.project_id == project_id)
 
 #####################VehiclaScanReport#############################
-
-
-def saveECUScanResults(db: Session, ECUScanResults):
-
-    for esr in ECUScanResults:
-        db_ecuscandata = models.Ecu_scan(id=uuid.uuid4(), vin=esr.vin, sign_found=esr.sign_found,
-                                         sign_ref=esr.sign_ref, filename=esr.filename, verified_status=esr.verified_status,
-                                         verified=esr.verified, verified_ts=esr.verified_ts, flash_error=esr.flashingerror,
-                                         project_id=esr.project_id)
-        db.add(db_ecuscandata)
-    db.commit()
-
 
 def get_flash_stats(db: Session, project_id: uuid.UUID):
     return db.query(models.Ecu_scan).filter(models.Ecu_scan.project_id == project_id)
