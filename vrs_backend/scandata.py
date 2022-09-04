@@ -15,7 +15,7 @@ class ECUFlashResult():
 
 class ScanData:
     def __init__(self, vsr):
-        self.vsr = vsr
+        self.__vsr = vsr
 
     def verify(self, refData):
         pass

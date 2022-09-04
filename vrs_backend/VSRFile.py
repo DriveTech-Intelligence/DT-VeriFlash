@@ -1,9 +1,7 @@
 from abc import abstractmethod, ABC
-import os
 import pdfplumber
 import pandas as pd
 from scandata import ScanData
-
 
 class VSR_File(ABC):
     @abstractmethod
@@ -30,7 +28,8 @@ class PDFVSRFile(VSR_File):
             tables.extend(page.extract_table())
 
         tablesDf = pd.DataFrame(tables[1:], columns=tables[0])
-        tablesDf.drop(['Active'], axis=1)
+        tablesDf = tablesDf.drop(['Active'], axis=1)
+        #tablesDf['EcuName']=tablesDf['EcuName'].ffill()
 
         for index in range(len(tablesDf)):
             if tablesDf['EcuName'][index] != "":
@@ -42,19 +41,20 @@ class PDFVSRFile(VSR_File):
                     tablesDf['Parameter'][index], tablesDf['Value'][index]))
         
         return ScanData(tablesDict)
-    
+        
 
 #global function
-
-
 def getScanData(filepath, file_format):
     vsrObj = None
     if file_format == 'PDFVSRFile':
         vsrObj = PDFVSRFile(filepath)
         # if format ('HTMLVSR')
         #     vsrObj = HTMLVSR(filepath)
-    if (vsrObj is not None):
+    if(vsrObj is not None):
         return vsrObj.loadVSR()
     else:
-        # raise error - unsupported VSR file
-        raise ()
+        #raise error - unsupported VSR file
+        raise()
+
+
+

@@ -57,3 +57,7 @@ def get_reference_data(db: Session, project_id: uuid.UUID):
 
 def get_flash_stats(db: Session, project_id: uuid.UUID):
     return db.query(models.Ecu_scan).filter(models.Ecu_scan.project_id == project_id)
+
+
+def get_lastECUProcessedTS(db: Session, project_id: uuid.UUID) -> schemas.Ecu_scan:
+    return db.query(models.Ecu_scan).filter(models.Ecu_scan.project_id == project_id).order_by(models.Ecu_scan.verified_ts.desc()).first()
