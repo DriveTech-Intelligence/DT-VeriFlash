@@ -57,15 +57,7 @@ class ScanData:
             ecuscan = schemas.Ecu_scanCreate(ecu_name=ecu, vin=self.__vin, sign_found=evs.found_ver, sign_ref=evs.expected_ver,
             verified=verified, verified_status=evs.verifiedStatus, flash_error=evs.flashError, filename=fname, project_id=uuid4(),
             verified_ts=datetime.now())
-            # ecuscan.ecu_name = ecu
-            # ecuscan.vin = self.__vin
-            # ecuscan.sign_found = evs.found_ver
-            # ecuscan.sign_ref = evs.expected_ver 
-            # ecuscan.verified = verified
-            # ecuscan.verified_status = evs.verifiedStatus
-            # ecuscan.flash_error = evs.flashError
-            # ecuscan.filename = fname
-
+            
             ECUScanResults.append(ecuscan)
         return ECUScanResults
 
@@ -95,9 +87,7 @@ class ScanData:
                     found_ver = r[0]
                 
             elif vm == 'endswith':
-                print(paramValues)
                 r = [p for p in paramValues if p.endswith(expected_ver)]
-                print(r)
                 if r is not None and len(r) > 0 :
                     verifiedStatus = 'OK'
                     found_ver = r[0]

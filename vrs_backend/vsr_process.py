@@ -9,9 +9,6 @@ class ReferenceData:
         self.rFile = rFile
         self.rFilename = rFile.filename
 
-    def printFile(self):
-        print(self.rFile, self.rFilename)
-
     def check_extension(self):
         if self.rFilename.endswith(".xlsx"):
             return "xlsx"

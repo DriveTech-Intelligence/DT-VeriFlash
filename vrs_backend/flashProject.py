@@ -33,8 +33,9 @@ class FlashProject:
         ts = datetime.now()
         VSRFiles = self.getFilesToProcess(lastVSRProcessedDate)
         refData = self.getRefData(db)
-        esResults = []
+        
         for f in VSRFiles:
+            esResults = []
             objScanData = getScanData(f, self.__project.file_format)
             scanResults = objScanData.verify(refData,f)
             for sR in scanResults:
