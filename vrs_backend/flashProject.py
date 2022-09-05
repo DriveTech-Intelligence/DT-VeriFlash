@@ -25,7 +25,7 @@ class FlashProject:
 
         for f in VSRFiles:
             objScanData = getScanData(f, self.__project.file_format)
-            scanResults = objScanData.verify(refData)
+            scanResults = objScanData.verify(refData,f)
             self.saveScanResult(scanResults)
 
     def __getCreateTime(self,fpath):
