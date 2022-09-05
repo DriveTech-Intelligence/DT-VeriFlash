@@ -46,7 +46,7 @@ class Ecu_scan(Base):
     sign_ref = Column(String(100))
     verified = Column(Boolean)
     verified_status = Column(String(100))
-    flash_error = Column(Boolean)
+    flash_error = Column(String(100))
     filename = Column(String(256))
     project_id= Column(UUID(as_uuid=True), ForeignKey("project.id"))
     verified_ts= Column(String(100))

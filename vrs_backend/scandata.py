@@ -1,10 +1,12 @@
+from datetime import datetime
+from uuid import uuid4
 from database import schemas
 from dataclasses import dataclass
 
 @dataclass
 class ECUVerifyStatus:
     verifiedStatus : str = ""
-    flashError : bool = False
+    flashError : str = ""
     found_ver : str = ""
     expected_ver : str = ""
 
@@ -22,17 +24,17 @@ class ScanData:
                 expTup = expKV[0]
                 if expTup[1] == ref.tag_2:
                     #expected variant code matches in the key value pair in ECU Params, so No error
-                    return False
+                    return ""
                 else:
-                    return True
+                    return "Invalid Flashing !"
             else:
-                return False # no matching key value pair found, hence cannot perform error detection
+                return "" # no matching key value pair found, hence cannot perform error detection
             
         elif ref.tag_interpret.lower() == 'infilename':
             if fname.find(ref.tag_1) > -1 : #expected variant code in tag1 found in filename, NO error
-                return False
+                return ""
             else:
-                return True
+                return "Invalid Flashing"
             
 
     def verify(self, refData, fname):
@@ -53,7 +55,8 @@ class ScanData:
                 
             #populate the Data ECU_scan data structure
             ecuscan = schemas.Ecu_scanCreate(ecu_name=ecu, vin=self.__vin, sign_found=evs.found_ver, sign_ref=evs.expected_ver,
-            verified=verified, verified_status=evs.verifiedStatus, flash_error=evs.flashError, filename=fname)
+            verified=verified, verified_status=evs.verifiedStatus, flash_error=evs.flashError, filename=fname, project_id=uuid4(),
+            verified_ts=datetime.now())
             # ecuscan.ecu_name = ecu
             # ecuscan.vin = self.__vin
             # ecuscan.sign_found = evs.found_ver

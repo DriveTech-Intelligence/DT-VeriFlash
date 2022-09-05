@@ -27,7 +27,7 @@ class Ecu_scanCreate(BaseModel):
     sign_ref: str
     verified:bool
     verified_status:str
-    flash_error:bool
+    flash_error:str
     filename: str
     project_id: UUID
     verified_ts: datetime

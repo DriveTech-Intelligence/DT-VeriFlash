@@ -37,7 +37,7 @@ class FlashProject:
             objScanData = getScanData(f, self.__project.file_format)
             scanResults = objScanData.verify(refData,f)
             for sR in scanResults:
-                ecuscan = schemas.Ecu_scanCreate(ecu_name=sR.ecu_name, vin=sR.vin, sign_found=sR.found_ver, sign_ref=sR.sign_ref,
+                ecuscan = schemas.Ecu_scanCreate(ecu_name=sR.ecu_name, vin=sR.vin, sign_found=sR.sign_found, sign_ref=sR.sign_ref,
                 verified=sR.verified, verified_status=sR.verified_status, flash_error=sR.flash_error, filename=sR.filename,
                 project_id = self.__project_id,verified_ts = ts)
                 esResults.append(ecuscan)
@@ -59,10 +59,11 @@ class FlashProject:
         VSRFiles = []
         files = os.listdir(self.__project.file_location)
         for f in files :
-            fpath = os.path.join(self.__project.file_location , f) 
-            sTime  = self.__getCreateTime(fpath)
-            if sTime >= lastProcessedTS :
-                VSRFiles.append(fpath)
+            if f.endswith('pdf'):
+                fpath = os.path.join(self.__project.file_location , f) 
+                sTime  = self.__getCreateTime(fpath)
+                if sTime >= lastProcessedTS :
+                    VSRFiles.append(fpath)
         return VSRFiles
 
     def getRefData(self,db):
