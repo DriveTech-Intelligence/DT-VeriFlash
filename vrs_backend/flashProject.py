@@ -1,5 +1,8 @@
 from curses import raw
+from datetime import datetime, timedelta
 import platform
+import time
+import calendar
 import scandata
 #from vrs_backend import database
 from database import crud
@@ -17,16 +20,28 @@ class FlashProject:
         return self.__project
 
     def processVSRFiles(self,db):
+        #load from db initially
+        self.loadfromDB(db)
+
         ecu_scan : schemas.Ecu_scan
         ecu_scan = crud.get_lastECUProcessedTS(db,self.__project_id)
-        lastVSRProcessedDate = ecu_scan.verified_ts
+        if ecu_scan == None:
+            lastVSRProcessedDate = datetime(2000,1,1)
+        else:
+            lastVSRProcessedDate = ecu_scan.verified_ts
+        ts = datetime.now()
         VSRFiles = self.getFilesToProcess(lastVSRProcessedDate)
         refData = self.getRefData(db)
-
+        esResults = []
         for f in VSRFiles:
             objScanData = getScanData(f, self.__project.file_format)
             scanResults = objScanData.verify(refData,f)
-            self.saveScanResult(scanResults)
+            for sR in scanResults:
+                ecuscan = schemas.Ecu_scanCreate(ecu_name=sR.ecu_name, vin=sR.vin, sign_found=sR.found_ver, sign_ref=sR.sign_ref,
+                verified=sR.verified, verified_status=sR.verified_status, flash_error=sR.flash_error, filename=sR.filename,
+                project_id = self.__project_id,verified_ts = ts)
+                esResults.append(ecuscan)
+            crud.saveECUScanResults(db,esResults)
 
     def __getCreateTime(self,fpath):
         if platform.system() == 'Windows':
@@ -34,17 +49,17 @@ class FlashProject:
         else:
             stat = os.stat(fpath)
             try:
-                return stat.st_birthtime
+                return datetime.fromtimestamp(stat.st_ctime)
             except AttributeError:
                 # We're probably on Linux. No easy way to get creation dates here,
                 # so we'll settle for when its content was last modified.
-                return stat.st_mtime
+                return datetime.fromtimestamp(stat.st_mtime)
     
     def getFilesToProcess(self,lastProcessedTS):
         VSRFiles = []
         files = os.listdir(self.__project.file_location)
         for f in files :
-            fpath = os.path.join(self.__project.file_location , f  ) 
+            fpath = os.path.join(self.__project.file_location , f) 
             sTime  = self.__getCreateTime(fpath)
             if sTime >= lastProcessedTS :
                 VSRFiles.append(fpath)
@@ -63,8 +78,8 @@ class FlashProject:
         return refData
         
 
-    def saveScanResults(db,scanResults):
+    def saveScanResults(self,db,scanResults):
         crud.saveECUScanResults(db,scanResults)
     
-    def getFlashingStatus():
+    def getFlashingStatus(self):
         pass

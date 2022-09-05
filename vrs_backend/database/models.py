@@ -12,7 +12,7 @@ class Project(Base):
     company_name = Column(String(100))
     vehicle_name = Column(String(100))
     location = Column(String(100))
-    date = Column(String(100))
+    create_ts = Column(String(100))
     status = Column(String(50))
     vin_interpret = Column(String(50))
     file_format = Column(String(100))
@@ -40,13 +40,14 @@ class Ecu_scan(Base):
     __tablename__= "ecu_scan"
 
     id = Column(UUID(as_uuid=True), primary_key=True)
+    ecu_name = Column(String(100))
     vin = Column(String(100))
     sign_found = Column(String(100))
     sign_ref = Column(String(100))
     verified = Column(Boolean)
     verified_status = Column(String(100))
     flash_error = Column(Boolean)
-    filename = Column(String(100))
+    filename = Column(String(256))
     project_id= Column(UUID(as_uuid=True), ForeignKey("project.id"))
     verified_ts= Column(String(100))
 

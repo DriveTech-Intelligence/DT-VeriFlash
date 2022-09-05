@@ -1,26 +1,20 @@
+from database import schemas
 from dataclasses import dataclass
-import uuid
-
-from vrs_backend.database import schemas
-
 
 @dataclass
-class ECUFlashResult():
-    ecu:str
-    verRefdata:str
-    verVSRr:str
-    verified:bool
-    verifiedStatus:str
-    flashError:bool
-    fileName:str
-    projectID:uuid
+class ECUVerifyStatus:
+    verifiedStatus : str = ""
+    flashError : bool = False
+    found_ver : str = ""
+    expected_ver : str = ""
 
 class ScanData:
-    def __init__(self, vsr):
+    def __init__(self, vsr, vin):
         self.__vsr = vsr
+        self.__vin = vin
 
     def __performErrorDetection(self,ref : schemas.Reference, VSR_EcuParams,fname:str):
-        if ref.tag_interpret == 'keyvalue':
+        if ref.tag_interpret.lower() == 'keyvalue':
             # in this case interpret tag1 = expected parameter_name, tag2 = expected value
             expKV = [tup for tup in VSR_EcuParams if tup[0]==ref.tag_1]
 
@@ -28,37 +22,49 @@ class ScanData:
                 expTup = expKV[0]
                 if expTup[1] == ref.tag_2:
                     #expected variant code matches in the key value pair in ECU Params, so No error
-                    return ""
+                    return False
                 else:
-                    return "Flash Error"
+                    return True
             else:
-                return "" # no matching key value pair found, hence cannot perform error detection
+                return False # no matching key value pair found, hence cannot perform error detection
             
-        elif ref.tag_interpret == 'infilename':
+        elif ref.tag_interpret.lower() == 'infilename':
             if fname.find(ref.tag_1) > -1 : #expected variant code in tag1 found in filename, NO error
-                return ""
+                return False
             else:
-                return "Flash Error"
+                return True
             
 
     def verify(self, refData, fname):
-        
+        ECUScanResults = []
         for ecu in self.__vsr.keys():
-            ecuscan : schemas.Ecu_scan
+            # ecuscan = schemas.Ecu_scanCreate()
             verified = False
-            verifiedStatus = ''
-            flashError = ''
+            evs = ECUVerifyStatus()
             if ecu in refData.keys() :
                 # if ecu is found in refData, then it is verified
                 verified = True
 
                 ecu_refData = refData[ecu]
                 VSR_EcuParams = self.__vsr[ecu]
+                ECUParamsdict = {tup[0]: tup[1] for tup in VSR_EcuParams}
                 
-                verifiedStatus, flashError = self.__getECUVerifyStatus(VSR_EcuParams,ecu_refData,fname)
-
+                evs = self.__getECUVerifyStatus(VSR_EcuParams,ecu_refData,fname)
+                
             #populate the Data ECU_scan data structure
+            ecuscan = schemas.Ecu_scanCreate(ecu_name=ecu, vin=self.__vin, sign_found=evs.found_ver, sign_ref=evs.expected_ver,
+            verified=verified, verified_status=evs.verifiedStatus, flash_error=evs.flashError, filename=fname)
+            # ecuscan.ecu_name = ecu
+            # ecuscan.vin = self.__vin
+            # ecuscan.sign_found = evs.found_ver
+            # ecuscan.sign_ref = evs.expected_ver 
+            # ecuscan.verified = verified
+            # ecuscan.verified_status = evs.verifiedStatus
+            # ecuscan.flash_error = evs.flashError
+            # ecuscan.filename = fname
 
+            ECUScanResults.append(ecuscan)
+        return ECUScanResults
 
     def __getECUVerifyStatus(self,VSR_EcuParams,ecu_refData,fname):
 
@@ -72,20 +78,32 @@ class ScanData:
         for ref in ecu_refData:
             expected_ver = ref.ecu_signature
             vm = ref.verification_method
-            
+            found_ver = ''
             #perform verificaion, based on verification method
             if vm == 'matches':
                 if expected_ver in paramValues:
                     #found matching s/w version, ECU verified status is OK
-                    verifiedStatus = 'OK'        
+                    verifiedStatus = 'OK'
+                    found_ver = expected_ver      
             elif vm == 'contains':
-                pass
+                r = [p for p in paramValues if p.find(expected_ver) > -1]
+                if r is not None and len(r) > 0 :
+                    verifiedStatus = 'OK'
+                    found_ver = r[0]
+                
             elif vm == 'endswith':
-                #TBD
-                pass
+                print(paramValues)
+                r = [p for p in paramValues if p.endswith(expected_ver)]
+                print(r)
+                if r is not None and len(r) > 0 :
+                    verifiedStatus = 'OK'
+                    found_ver = r[0]
+                
             elif vm == 'startswith':
-                #TBD
-                pass
+                r = [p for p in paramValues if p.startswith(expected_ver)]
+                if r is not None and len(r) > 0 :
+                    verifiedStatus = 'OK'
+                    found_ver = r[0]
 
             if verifiedStatus == 'OK':
                 #if there are more than one refData for this ECU, perform error detection
@@ -95,4 +113,4 @@ class ScanData:
                 #break if atleast one version from refData matches with S/W ver in VSR Param values
                 break
         
-        return verifiedStatus,flashError
+        return ECUVerifyStatus(verifiedStatus, flashError, found_ver, expected_ver) 

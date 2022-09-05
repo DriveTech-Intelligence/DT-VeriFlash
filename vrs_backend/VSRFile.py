@@ -29,6 +29,7 @@ class PDFVSRFile(VSR_File):
 
         tablesDf = pd.DataFrame(tables[1:], columns=tables[0])
         tablesDf = tablesDf.drop(['Active'], axis=1)
+        vin = tablesDf.loc[tablesDf['Parameter'] == 'VIN', 'Value'].iloc[0]
         #tablesDf['EcuName']=tablesDf['EcuName'].ffill()
 
         for index in range(len(tablesDf)):
@@ -40,7 +41,7 @@ class PDFVSRFile(VSR_File):
                 tablesDict[tempEcuName].append((
                     tablesDf['Parameter'][index], tablesDf['Value'][index]))
         
-        return ScanData(tablesDict)
+        return ScanData(tablesDict, vin)
         
 
 #global function

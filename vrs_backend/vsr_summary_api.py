@@ -52,7 +52,6 @@ def createProject(project: schemas.ProjectCreate,  db: Session = Depends(get_db)
 @app.post("/upload-reference-file")
 async def uploadReferencefile(file: UploadFile, project_id="3fa85f64-5717-4562-b3fc-2c963f66afa6", db: Session = Depends(get_db)):
     refD = ReferenceData(file)
-    refD.printFile()
     content = await refD.create_ref()
     crud.save_reference_data(db, content, project_id)
 
@@ -60,7 +59,7 @@ async def uploadReferencefile(file: UploadFile, project_id="3fa85f64-5717-4562-b
 
 
 @app.post("/get-vsr-files")
-def getVsrFiles(vsrFolder: str, project_id: str, db: Session = Depends(get_db)):
+def getVsrFiles(project_id: str, db: Session = Depends(get_db)):
     proj = FlashProject(project_id)
     proj.processVSRFiles(db)
     result = proj.getFlashingStatus()

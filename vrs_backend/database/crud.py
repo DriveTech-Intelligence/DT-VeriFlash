@@ -7,12 +7,12 @@ from . import schemas
 def saveECUScanResults(db: Session, ECUScanResults):
     esr :schemas.Ecu_scanCreate
     for esr in ECUScanResults:
-        db_ecuscandata = models.Ecu_scan(id=uuid.uuid4(), vin=esr.vin, sign_found=esr.sign_found,
+        db_ecuscandata = models.Ecu_scan(id=uuid.uuid4(),ecu_name=esr.ecu_name, vin=esr.vin, sign_found=esr.sign_found,
                                 sign_ref=esr.sign_ref, filename=esr.filename, verified_status=esr.verified_status,
-                                verified = esr.verified, verified_ts=esr.verified_ts, flash_error = esr.flashingerror,
+                                verified = esr.verified, verified_ts=esr.verified_ts, flash_error = esr.flash_error,
                                 project_id=esr.project_id)
         db.add(db_ecuscandata)
-    db.commit()        
+        db.commit()        
 
 ################Project##########################
 def get_project(db: Session, project_id: uuid.UUID):
@@ -21,9 +21,9 @@ def get_project(db: Session, project_id: uuid.UUID):
 
 def create_project(db: Session, project: schemas.ProjectCreate):
     db_project = models.Project(id=uuid.uuid4(), company_name=project.company_name, vehicle_name=project.vehicle_name,
-                                location=project.location, date=project.date, status="In Progress",
+                                location=project.location, create_ts=project.create_ts, status="In Progress",
                                 vin_interpret=project.vin_interpret, file_format=project.file_format,
-                                file_location="string")
+                                file_location=project.file_location)
     db.add(db_project)
     db.commit()
     db.refresh(db_project)
@@ -51,7 +51,7 @@ def save_reference_data(db: Session, refData, project_id: uuid.UUID):
 
 
 def get_reference_data(db: Session, project_id: uuid.UUID):
-    return db.query(models.Reference).filter(models.Reference.project_id == project_id).orderby(models.Reference.ecu_name).all()
+    return db.query(models.Reference).filter(models.Reference.project_id == project_id).order_by(models.Reference.ecu_name).all()
 
 #####################VehiclaScanReport#############################
 
