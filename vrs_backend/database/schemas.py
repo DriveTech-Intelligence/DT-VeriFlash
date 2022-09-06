@@ -56,3 +56,12 @@ class Project(ProjectCreate):
     status: str
     class Config:
         orm_mode = True
+
+
+class FlashStats(BaseModel):
+    filename: str
+    id: str
+    verified: int
+    passed: int
+    failed: int
+    failed_ecus: str

@@ -1,10 +1,5 @@
-from curses import raw
-from datetime import datetime, timedelta
+from datetime import datetime
 import platform
-import time
-import calendar
-import scandata
-#from vrs_backend import database
 from database import crud
 from VSRFile import getScanData
 from database import schemas
@@ -84,5 +79,5 @@ class FlashProject:
     def saveScanResults(self,db,scanResults):
         crud.saveECUScanResults(db,scanResults)
     
-    def getFlashingStatus(self):
-        pass
+    def getFlashingStatus(self, db):
+        return crud.get_flash_stats(db)

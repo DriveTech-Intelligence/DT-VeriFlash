@@ -1,9 +1,9 @@
-from uuid import uuid4
-from fastapi import Request, FastAPI, UploadFile
+from uuid import UUID
+from fastapi import FastAPI, UploadFile
 from flashProject import FlashProject
 from vsr_process import ReferenceData
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI
 from sqlalchemy.orm import Session
 
 from database import crud, models, schemas
@@ -50,7 +50,7 @@ def createProject(project: schemas.ProjectCreate,  db: Session = Depends(get_db)
 
 
 @app.post("/upload-reference-file")
-async def uploadReferencefile(file: UploadFile, project_id="3fa85f64-5717-4562-b3fc-2c963f66afa6", db: Session = Depends(get_db)):
+async def uploadReferencefile(file: UploadFile, project_id: UUID, db: Session = Depends(get_db)):
     refD = ReferenceData(file)
     content = await refD.create_ref()
     crud.save_reference_data(db, content, project_id)
@@ -58,11 +58,9 @@ async def uploadReferencefile(file: UploadFile, project_id="3fa85f64-5717-4562-b
 ############################Vehicle-Scan-Report########################
 
 
-@app.post("/get-vsr-files")
-def getVsrFiles(project_id: str, db: Session = Depends(get_db)):
-    proj = FlashProject(project_id)
+@app.post("/get-flash-stats")
+def getVsrFiles(dict: dict, db: Session = Depends(get_db)):
+    proj = FlashProject(dict['project_id'])
     proj.processVSRFiles(db)
-    result = proj.getFlashingStatus()
-    
-    #convert result to JSON, and send it in response
-    
+    result = proj.getFlashingStatus(db)
+    return result
