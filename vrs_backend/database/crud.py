@@ -19,7 +19,7 @@ def get_project(db: Session, project_id: uuid.UUID):
     return db.query(models.Project).filter(models.Project.id == project_id).first()
 
 
-def create_project(db: Session, project: schemas.ProjectCreate):
+def create_project(db: Session, project: schemas.Project):
     db_project = models.Project(id=uuid.uuid4(), company_name=project.company_name, vehicle_name=project.vehicle_name,
                                 location=project.location, create_ts=project.create_ts, status="In Progress",
                                 vin_interpret=project.vin_interpret, file_format=project.file_format,

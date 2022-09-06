@@ -42,7 +42,7 @@ def get_db():
 ###########################Project############################
 
 
-@app.post("/project/", response_model=schemas.ProjectCreate)
+@app.post("/project/", response_model=schemas.Project)
 def createProject(project: schemas.ProjectCreate,  db: Session = Depends(get_db)):
     return crud.create_project(db=db, project=project)
 
