@@ -4,17 +4,14 @@ import axios from "axios";
 import { API_FETCH_FLASH_STATS } from "../Data/Apiservice";
 import { DataGrid } from "@mui/x-data-grid";
 
-const MTable = () => {
+const MTable = (props) => {
   const [vsrData, setVsrData] = useState({});
-  const [fetchData, setFetchData] = useState(true);
   const fetchvsrData = async () => {
     let response = await axios.post(API_FETCH_FLASH_STATS, {
-      project_id: "fb05e9e0-82cd-49f1-b1d7-a72d0ef81955",
+      project_id: props.project,
     });
-    // console.log(response);
     let vsrData = response.data;
     setVsrData(vsrData);
-    setFetchData(false);
   };
 
   const createColumns = (vsrData) => {
@@ -31,12 +28,9 @@ const MTable = () => {
   };
 
   useEffect(() => {
-    if (fetchData) {
       fetchvsrData();
-    }
-  }, [fetchData, vsrData]);
+  }, [props.project]);
 
-  // console.log(vsrData);
 
   return vsrData?.length ? (
     <div style={{ height: 700, width: "100%" }}>

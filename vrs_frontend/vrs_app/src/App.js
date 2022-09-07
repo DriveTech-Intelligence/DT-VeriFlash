@@ -1,23 +1,30 @@
-import './App.css';
-import StaticBar from "./Appbar/Appbar"
 import "./App.css";
-import {
-  FormControl,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Typography,
-} from "@mui/material";
+import StaticBar from "./Appbar/Appbar";
+import { useEffect, useState } from "react";
+import { Grid } from "@mui/material";
 import MTable from "./Table/MTable";
-import { useState } from "react";
-import Select from "@mui/material/Select";
+import PageHeader from "./PageHeader/PageHeader";
+import { API_GET_REPORT_LIST } from "./Data/Apiservice";
+import axios from "axios";
 
 function App() {
-  const [ecu, setEcu] = useState("");
+  const [projectList, setProjectList] = useState([]);
+  const [project, setProject] = useState({});
 
-  const handleChange = (event) => {
-    setEcu(event.target.value);
+  const getReportList = async () => {
+    let response = await axios.post(API_GET_REPORT_LIST, {
+      company_name: "MVR",
+    });
+    let projectList = response.data;
+    setProjectList(projectList);
   };
+
+  useEffect(() => {
+    if (!projectList?.length) {
+      getReportList();
+    }
+  }, [projectList]);
+
   return (
     <div className="App">
       <header className="App-header">
@@ -25,31 +32,15 @@ function App() {
       </header>
       <Grid container spacing={2} padding={5}>
         <Grid item xs={4}>
-          <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-            <InputLabel id="ecu-select">ECU</InputLabel>
-            <Select
-              labelId="ecu-select"
-              id="ecu-select"
-              value={ecu}
-              label="Ecu"
-              onChange={handleChange}
-            >
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
-              <MenuItem value={10}>PCM</MenuItem>
-              <MenuItem value={20}>Radio</MenuItem>
-              <MenuItem value={30}>TCM</MenuItem>
-              <MenuItem value={40}>SCRM</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={8}>
-          <Typography>Statistics</Typography>
+          <PageHeader
+            project={project}
+            projectList={projectList}
+            setProject={setProject}
+          />
         </Grid>
       </Grid>
       <Grid container padding={5}>
-        <MTable />
+        <MTable project={project} />
       </Grid>
     </div>
   );

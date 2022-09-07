@@ -42,10 +42,13 @@ def get_db():
 ###########################Project############################
 
 
-@app.post("/project/", response_model=schemas.Project)
+@app.post("/create-project/", response_model=schemas.Project)
 def createProject(project: schemas.ProjectCreate,  db: Session = Depends(get_db)):
     return crud.create_project(db=db, project=project)
 
+@app.post("/get-project-list")
+def getProjectList(apiInput:dict,  db: Session = Depends(get_db)):
+    return crud.get_project_list(db=db, company_name=apiInput['company_name'])
 ############################Reference#############################
 
 
@@ -59,8 +62,8 @@ async def uploadReferencefile(file: UploadFile, project_id: UUID, db: Session = 
 
 
 @app.post("/get-flash-stats")
-def getVsrFiles(dict: dict, db: Session = Depends(get_db)):
-    proj = FlashProject(dict['project_id'])
+def getVsrFiles(apiInput: dict, db: Session = Depends(get_db)):
+    proj = FlashProject(apiInput['project_id'])
     proj.processVSRFiles(db)
     result = proj.getFlashingStatus(db)
     return result

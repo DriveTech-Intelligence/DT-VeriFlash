@@ -19,6 +19,8 @@ def saveECUScanResults(db: Session, ECUScanResults):
 def get_project(db: Session, project_id: uuid.UUID):
     return db.query(models.Project).filter(models.Project.id == project_id).first()
 
+def get_project_list(db: Session, company_name: str):
+    return db.query(models.Project).filter(models.Project.company_name == company_name).all()
 
 def create_project(db: Session, project: schemas.Project):
     db_project = models.Project(id=uuid.uuid4(), company_name=project.company_name, vehicle_name=project.vehicle_name,

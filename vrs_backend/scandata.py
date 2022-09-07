@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 from uuid import uuid4
 from database import schemas
 from dataclasses import dataclass
@@ -39,6 +40,7 @@ class ScanData:
 
     def verify(self, refData, fname):
         ECUScanResults = []
+        fname = os.path.basename(fname)
         for ecu in self.__vsr.keys():
             # ecuscan = schemas.Ecu_scanCreate()
             verified = False
