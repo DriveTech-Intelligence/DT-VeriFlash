@@ -27,7 +27,7 @@ class PDFVSRFile(VSR_File):
         for page in pdf.pages:
             tables.extend(page.extract_table())
 
-        tablesDf = pd.DataFrame(tables[1:], columns=tables[0])
+        tablesDf = pd.DataFrame([subT[:4] for subT in tables[1:]], columns=tables[0][:4])
         tablesDf = tablesDf.drop(['Active'], axis=1)
         vin = tablesDf.loc[tablesDf['Parameter'] == 'VIN', 'Value'].iloc[0]
         #tablesDf['EcuName']=tablesDf['EcuName'].ffill()
