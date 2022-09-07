@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, DateTime
+from sqlalchemy import Boolean, Column, ForeignKey, String, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -12,7 +12,7 @@ class Project(Base):
     company_name = Column(String(100))
     vehicle_name = Column(String(100))
     location = Column(String(100))
-    create_ts = Column(String(100))
+    create_ts = Column(DateTime)
     status = Column(String(50))
     vin_interpret = Column(String(50))
     file_format = Column(String(100))
@@ -49,6 +49,6 @@ class Ecu_scan(Base):
     flash_error = Column(String(100))
     filename = Column(String(256))
     project_id= Column(UUID(as_uuid=True), ForeignKey("project.id"))
-    verified_ts= Column(String(100))
+    verified_ts= Column(DateTime)
 
     project = relationship("Project", back_populates="ecu_scan")

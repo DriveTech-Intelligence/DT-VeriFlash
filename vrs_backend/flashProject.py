@@ -23,7 +23,7 @@ class FlashProject:
         if ecu_scan == None:
             lastVSRProcessedDate = datetime(2000,1,1)
         else:
-            lastVSRProcessedDate = datetime. strptime(ecu_scan.verified_ts[0:ecu_scan.verified_ts.find(".")], '%Y-%m-%d %H:%M:%S')
+            lastVSRProcessedDate = datetime.strptime(ecu_scan.verified_ts[0:ecu_scan.verified_ts.find(".")], '%Y-%m-%d %H:%M:%S')
 
         ts = datetime.now()
         VSRFiles = self.getFilesToProcess(lastVSRProcessedDate)
