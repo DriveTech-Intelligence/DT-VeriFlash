@@ -43,6 +43,13 @@ class PDFVSRFile(VSR_File):
         
         return ScanData(tablesDict, vin)
         
+class HTMLVSRFile(VSR_File):
+    def __init__(self, filepath) -> None:
+        super().__init__()
+        self.__filepath = filepath
+    
+    def loadVSR(self):
+        pass
 
 #global function
 def getScanData(filepath, file_format):
