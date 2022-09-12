@@ -10,6 +10,7 @@ import axios from "axios";
 function App() {
   const [projectList, setProjectList] = useState([]);
   const [project, setProject] = useState({});
+  const [vsrData, setVsrData] = useState({});
 
   const getReportList = async () => {
     let response = await axios.post(API_GET_REPORT_LIST, {
@@ -31,16 +32,15 @@ function App() {
         <StaticBar></StaticBar>
       </header>
       <Grid container spacing={2} padding={5}>
-        <Grid item xs={4}>
-          <PageHeader
-            project={project}
-            projectList={projectList}
-            setProject={setProject}
-          />
-        </Grid>
+        <PageHeader
+          project={project}
+          projectList={projectList}
+          setProject={setProject}
+          vsrData={vsrData}
+        />
       </Grid>
-      <Grid container padding={5}>
-        <MTable project={project} />
+      <Grid container padding={2}>
+        <MTable project={project} vsrData={vsrData} setVsrData={setVsrData} />
       </Grid>
     </div>
   );

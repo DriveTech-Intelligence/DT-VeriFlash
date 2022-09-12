@@ -72,7 +72,8 @@ def get_lastECUProcessedTS(db: Session, project_id: uuid.UUID) -> schemas.Ecu_sc
 
 def get_flash_stats(db: Session):
     flashStats = []
-    result = db.execute('''select P.filename,p.vin as id, V.verified, P.passed, F.Failed, F_ECU.Failed_ECUs, IF_ECU.Incorrectly_Flashed
+    # Sequence of results in the select should be maintained in the schemas.FlashStats
+    result = db.execute('''select P.filename,p.vin as id, V.verified, P.passed, F.Failed, F_ECU.Failed_ECUs, IF_ECU.Incorrectly_Flashed, VM_ECU.Vin_mismatch
                             from
                                 (select filename, vin, count(verified) as Passed
                                 from ecu_scan
@@ -102,7 +103,13 @@ def get_flash_stats(db: Session):
                                         FROM ecu_scan
                                         where verified_status = 'Fail' and flash_error != ''
                                         GROUP BY vin
-                                        )as IF_ECU on P.vin = IF_ECU.vin''').all()
+                                        )as IF_ECU on P.vin = IF_ECU.vin
+                            left outer join (
+                                        SELECT vin, vin_error AS Vin_mismatch
+                                        FROM ecu_scan
+                                        GROUP BY vin, vin_error
+                                        ORDER BY vin
+                                        )as VM_ECU on P.vin = VM_ECU.vin''').all()
     
     for record in result:
         flashStats.append(schemas.FlashStats(**record).dict())

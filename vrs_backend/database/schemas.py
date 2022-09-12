@@ -31,6 +31,7 @@ class Ecu_scanCreate(BaseModel):
     filename: str
     project_id: UUID
     verified_ts: datetime
+    vin_error: bool
 
     class Config:
         orm_mode = True
@@ -65,3 +66,5 @@ class FlashStats(BaseModel):
     passed: int
     failed: int
     failed_ecus: str
+    incorrectly_flashed: str | None
+    vin_mismatch: bool | None

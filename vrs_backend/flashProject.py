@@ -23,7 +23,7 @@ class FlashProject:
         if ecu_scan == None:
             lastVSRProcessedDate = datetime(2000,1,1)
         else:
-            lastVSRProcessedDate = datetime.strptime(ecu_scan.verified_ts[0:ecu_scan.verified_ts.find(".")], '%Y-%m-%d %H:%M:%S')
+            lastVSRProcessedDate = ecu_scan.verified_ts
 
         ts = datetime.now()
         VSRFiles = self.getFilesToProcess(lastVSRProcessedDate)
@@ -36,7 +36,7 @@ class FlashProject:
             for sR in scanResults:
                 ecuscan = schemas.Ecu_scanCreate(ecu_name=sR.ecu_name, vin=sR.vin, sign_found=sR.sign_found, sign_ref=sR.sign_ref,
                 verified=sR.verified, verified_status=sR.verified_status, flash_error=sR.flash_error, filename=sR.filename,
-                project_id = self.__project_id,verified_ts = ts)
+                project_id = self.__project_id,verified_ts = ts, vin_error=sR.vin_error)
                 esResults.append(ecuscan)
             crud.saveECUScanResults(db,esResults)
 

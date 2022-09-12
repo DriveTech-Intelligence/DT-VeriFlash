@@ -1,6 +1,7 @@
 from datetime import datetime
 import os
 from uuid import uuid4
+from xmlrpc.client import Boolean
 from database import schemas
 from dataclasses import dataclass
 
@@ -12,7 +13,7 @@ class ECUVerifyStatus:
     expected_ver : str = ""
 
 class ScanData:
-    def __init__(self, vsr, vin):
+    def __init__(self, vsr, vin) -> None:
         self.__vsr = vsr
         self.__vin = vin
 
@@ -36,7 +37,15 @@ class ScanData:
                 return ""
             else:
                 return "Invalid Flashing"
-            
+        else: # we dont have enough info for error detection 
+            return "" 
+    
+    def checkVinError(self, fname) -> Boolean:
+        if self.__vin in fname:
+            vin_error = False
+        else:
+            vin_error = True
+        return vin_error
 
     def verify(self, refData, fname):
         ECUScanResults = []
@@ -58,7 +67,7 @@ class ScanData:
             #populate the Data ECU_scan data structure
             ecuscan = schemas.Ecu_scanCreate(ecu_name=ecu, vin=self.__vin, sign_found=evs.found_ver, sign_ref=evs.expected_ver,
             verified=verified, verified_status=evs.verifiedStatus, flash_error=evs.flashError, filename=fname, project_id=uuid4(),
-            verified_ts=datetime.now())
+            verified_ts=datetime.now(), vin_error=self.checkVinError(fname))
             
             ECUScanResults.append(ecuscan)
         return ECUScanResults

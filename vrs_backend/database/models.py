@@ -11,7 +11,7 @@ class Project(Base):
     id = Column(UUID(as_uuid=True), primary_key=True)
     company_name = Column(String(100))
     vehicle_name = Column(String(100))
-    location = Column(String(100))
+    location = Column(String(100))  
     create_ts = Column(DateTime)
     status = Column(String(50))
     vin_interpret = Column(String(50))
@@ -50,5 +50,6 @@ class Ecu_scan(Base):
     filename = Column(String(256))
     project_id= Column(UUID(as_uuid=True), ForeignKey("project.id"))
     verified_ts= Column(DateTime)
+    vin_error= Column(Boolean)
 
     project = relationship("Project", back_populates="ecu_scan")
