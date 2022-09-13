@@ -79,5 +79,5 @@ class FlashProject:
     def saveScanResults(self,db,scanResults):
         crud.saveECUScanResults(db,scanResults)
     
-    def getFlashingStatus(self, db):
-        return crud.get_flash_stats(db)
+    def getFlashingStatus(self, db, project_id):
+        return crud.get_flash_stats(db, project_id)

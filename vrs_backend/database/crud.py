@@ -1,5 +1,6 @@
 import uuid
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from . import models
 from . import schemas
 
@@ -9,7 +10,7 @@ def saveECUScanResults(db: Session, ECUScanResults):
         db_ecuscandata = models.Ecu_scan(id=uuid.uuid4(), ecu_name=esr.ecu_name, vin=esr.vin, sign_found=esr.sign_found,
                                          sign_ref=esr.sign_ref, filename=esr.filename, verified_status=esr.verified_status,
                                          verified=esr.verified, verified_ts=esr.verified_ts, flash_error=esr.flash_error,
-                                         project_id=esr.project_id)
+                                         project_id=esr.project_id, vin_error=esr.vin_error)
         db.add(db_ecuscandata)
         db.commit()
 
@@ -50,6 +51,7 @@ def save_reference_data(db: Session, refData, project_id: uuid.UUID):
                                   verification_method=ref.verification_method, tag_1=ref.tag_1, tag_2=ref.tag_2,
                                   tag_interpret=ref.tag_interpret, project_id=ref.project_id)
         db.add(db_ref)
+    db.query(models.Ecu_scan).filter(models.Ecu_scan.project_id == project_id).delete() #remove old data from ecu_Scan table since the ref data is changed
     db.commit()
 
 
@@ -59,10 +61,6 @@ def get_reference_data(db: Session, project_id: uuid.UUID):
 #####################VehiclaScanReport#############################
 
 
-def get_flash_stats(db: Session, project_id: uuid.UUID):
-    return db.query(models.Ecu_scan).filter(models.Ecu_scan.project_id == project_id)
-
-
 def get_lastECUProcessedTS(db: Session, project_id: uuid.UUID) -> schemas.Ecu_scan:
     return db.query(models.Ecu_scan).filter(models.Ecu_scan.project_id == project_id).order_by(models.Ecu_scan.verified_ts.desc()).first()
 
@@ -70,50 +68,51 @@ def get_lastECUProcessedTS(db: Session, project_id: uuid.UUID) -> schemas.Ecu_sc
 #################################Flash-Stats###################################
 
 
-def get_flash_stats(db: Session):
+def get_flash_stats(db: Session, project_id):
     flashStats = []
     # Sequence of results in the select should be maintained in the schemas.FlashStats
-    result = db.execute('''select P.filename,p.vin as id, V.verified, P.passed, F.Failed, F_ECU.Failed_ECUs, IF_ECU.Incorrectly_Flashed, VM_ECU.Vin_mismatch
-                            from
-                                (select filename, vin, count(verified) as Passed
-                                from ecu_scan
-                                where verified = true and verified_status = 'OK'
-                                group by filename , vin
-                                ) as P
-                            inner join (
-                                        select filename, vin, count(verified) as Failed
-                                        from ecu_scan
-                                        where verified = true and verified_status = 'Fail'
-                                        group by filename , vin
-                                        ) as F on P.vin = F.vin
-                            inner join (
-                                        select filename, vin, count(verified) as Verified
-                                        from ecu_scan
-                                        where verified = true
-                                        group by filename , vin
-                                        ) as V on P.vin = V.vin
-                            left outer join (
-                                        SELECT vin, STRING_AGG(ecu_name, ', ') AS Failed_ECUs
-                                        FROM ecu_scan
-                                        where verified_status = 'Fail'
-                                        GROUP BY vin
-                                        )as F_ECU on P.vin = F_ECU.vin
-                            left outer join (
-                                        SELECT vin, STRING_AGG(ecu_name, ', ') AS Incorrectly_Flashed
-                                        FROM ecu_scan
-                                        where verified_status = 'Fail' and flash_error != ''
-                                        GROUP BY vin
-                                        )as IF_ECU on P.vin = IF_ECU.vin
-                            left outer join (
-                                        SELECT vin, vin_error AS Vin_mismatch
-                                        FROM ecu_scan
-                                        GROUP BY vin, vin_error
-                                        ORDER BY vin
-                                        )as VM_ECU on P.vin = VM_ECU.vin''').all()
+    statement = text("select P.filename,p.vin as id, V.verified, P.passed, F.Failed, F_ECU.Failed_ECUs, IF_ECU.Incorrectly_Flashed, VM_ECU.Vin_mismatch "
+                            "from "
+                                "(select filename, vin, count(verified) as Passed "
+                                "from ecu_scan "
+                                "where verified = true and verified_status = 'OK' and project_id = :project_id "
+                                "group by filename , vin"
+                                ") as P "
+                            "inner join ("
+                                        "select filename, vin, count(verified) as Failed "
+                                        "from ecu_scan "
+                                        "where verified = true and verified_status = 'Fail' and project_id = :project_id "
+                                        "group by filename , vin"
+                                        ") as F on P.vin = F.vin "
+                            "inner join ("
+                                        "select filename, vin, count(verified) as Verified "
+                                        "from ecu_scan "
+                                       " where verified = true  and project_id = :project_id "
+                                       " group by filename , vin"
+                                       " ) as V on P.vin = V.vin "
+                            "left outer join ("
+                                        "SELECT vin, STRING_AGG(ecu_name, ', ') AS Failed_ECUs "
+                                        "FROM ecu_scan "
+                                        "where verified_status = 'Fail' and project_id = :project_id "
+                                        "GROUP BY vin"
+                                        ")as F_ECU on P.vin = F_ECU.vin "
+                            "left outer join ("
+                                        "SELECT vin, STRING_AGG(ecu_name, ', ') AS Incorrectly_Flashed "
+                                        "FROM ecu_scan "
+                                        "where verified_status = 'Fail' and flash_error != '' and project_id = :project_id "
+                                        "GROUP BY vin "
+                                        ")as IF_ECU on P.vin = IF_ECU.vin "
+                            "left outer join ("
+                                        "SELECT vin, vin_error AS Vin_mismatch "
+                                        "FROM ecu_scan "
+                                        "where project_id = :project_id "
+                                        "GROUP BY vin, vin_error "
+                                        "ORDER BY vin"
+                                        ")as VM_ECU on P.vin = VM_ECU.vin "
+                                        "order by F.Failed desc, IF_ECU.Incorrectly_Flashed desc ")
+    result = db.execute(statement, {"project_id":project_id}).all()
     
     for record in result:
         flashStats.append(schemas.FlashStats(**record).dict())
 
     return flashStats
-
-

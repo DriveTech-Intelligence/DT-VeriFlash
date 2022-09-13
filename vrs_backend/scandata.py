@@ -11,6 +11,7 @@ class ECUVerifyStatus:
     flashError : str = ""
     found_ver : str = ""
     expected_ver : str = ""
+    vin_error : str = ""
 
 class ScanData:
     def __init__(self, vsr, vin) -> None:
@@ -28,7 +29,7 @@ class ScanData:
                     #expected variant code matches in the key value pair in ECU Params, so No error
                     return ""
                 else:
-                    return "Invalid Flashing !"
+                    return "Invalid Flashing"
             else:
                 return "" # no matching key value pair found, hence cannot perform error detection
             
@@ -40,18 +41,18 @@ class ScanData:
         else: # we dont have enough info for error detection 
             return "" 
     
-    def checkVinError(self, fname) -> Boolean:
-        if self.__vin in fname:
-            vin_error = False
+    def checkVinError(self, fname) -> str:
+        if fname.find(self.__vin) != -1:
+            result = ""
         else:
-            vin_error = True
-        return vin_error
+            result = "Mismatch"
+        return result
 
     def verify(self, refData, fname):
         ECUScanResults = []
         fname = os.path.basename(fname)
+        vin_error = self.checkVinError(fname)
         for ecu in self.__vsr.keys():
-            # ecuscan = schemas.Ecu_scanCreate()
             verified = False
             evs = ECUVerifyStatus()
             if ecu in refData.keys() :
@@ -62,17 +63,17 @@ class ScanData:
                 VSR_EcuParams = self.__vsr[ecu]
                 ECUParamsdict = {tup[0]: tup[1] for tup in VSR_EcuParams}
                 
-                evs = self.__getECUVerifyStatus(VSR_EcuParams,ecu_refData,fname)
-                
+                evs = self.__getECUVerifyStatus(VSR_EcuParams,ecu_refData,fname, vin_error)
+            
             #populate the Data ECU_scan data structure
             ecuscan = schemas.Ecu_scanCreate(ecu_name=ecu, vin=self.__vin, sign_found=evs.found_ver, sign_ref=evs.expected_ver,
             verified=verified, verified_status=evs.verifiedStatus, flash_error=evs.flashError, filename=fname, project_id=uuid4(),
-            verified_ts=datetime.now(), vin_error=self.checkVinError(fname))
+            verified_ts=datetime.now(), vin_error=evs.vin_error)
             
             ECUScanResults.append(ecuscan)
         return ECUScanResults
 
-    def __getECUVerifyStatus(self,VSR_EcuParams,ecu_refData,fname):
+    def __getECUVerifyStatus(self,VSR_EcuParams,ecu_refData,fname, vin_error):
 
         verifiedStatus = 'Fail'
         flashError = ''    
@@ -113,8 +114,10 @@ class ScanData:
                 #if there are more than one refData for this ECU, perform error detection
                 if len(ecu_refData) > 1 :
                     flashError = self.__performErrorDetection(ref, VSR_EcuParams,fname)
-                    
+                    #In case of any error treat the verified status as failed.
+                    if flashError != "" or vin_error != "":
+                        verifiedStatus = 'Fail'
                 #break if atleast one version from refData matches with S/W ver in VSR Param values
                 break
         
-        return ECUVerifyStatus(verifiedStatus, flashError, found_ver, expected_ver) 
+        return ECUVerifyStatus(verifiedStatus, flashError, found_ver, expected_ver, vin_error) 

@@ -67,5 +67,5 @@ async def uploadReferencefile(file: UploadFile, project_id: UUID, db: Session = 
 def getVsrFiles(apiInput: dict, db: Session = Depends(get_db)):
     proj = FlashProject(apiInput['project_id'])
     proj.processVSRFiles(db)
-    result = proj.getFlashingStatus(db)
+    result = proj.getFlashingStatus(db, apiInput['project_id'])
     return result

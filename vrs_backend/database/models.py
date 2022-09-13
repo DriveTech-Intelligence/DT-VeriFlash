@@ -50,6 +50,6 @@ class Ecu_scan(Base):
     filename = Column(String(256))
     project_id= Column(UUID(as_uuid=True), ForeignKey("project.id"))
     verified_ts= Column(DateTime)
-    vin_error= Column(Boolean)
+    vin_error= Column(String(100))
 
     project = relationship("Project", back_populates="ecu_scan")

@@ -12,31 +12,44 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
+import Moment from "moment";
 
 const PageHeader = (props) => {
   const handleChange = (event) => {
     props.setProject(event.target.value);
   };
 
-  const verifiedStat = props.vsrData?.length
-    ? props.vsrData.reduce((a, v) => (a = a + v["verified"]), 0)
-    : 0;
+  const verifiedStat = props.vsrData?.length ? props.vsrData.length : 0;
+  var failedEcus = 0;
+  var passedEcus = 0;
   const passedStat = props.vsrData?.length
-    ? props.vsrData.reduce((a, v) => (a = a + v["passed"]), 0)
+    ? props.vsrData.map((element) => {
+        if (element["failed"] === 0) {
+          passedEcus = passedEcus + 1;
+        }
+      }, 0) !== undefined
+      ? passedEcus
+      : 0
     : 0;
   const failedStat = props.vsrData?.length
-    ? props.vsrData.reduce((a, v) => (a = a + v["failed"]), 0)
+    ? props.vsrData.map((element) => {
+        if (element["failed"] !== 0) {
+          failedEcus = failedEcus + 1;
+        }
+      }, 0) !== undefined
+      ? failedEcus
+      : 0
     : 0;
 
   return (
     <>
-      <Grid item xs={4}>
-        <FormControl sx={{ m: 1, display:'flex' }} size="small">
-          <InputLabel id="project-select" >Select Project</InputLabel>
+      <Grid item xs={4} padding={0}>
+        <FormControl sx={{ m: 1 }} size="small" fullWidth={true}>
+          <InputLabel id="project-select">Select Project</InputLabel>
           <Select
             id="project-select"
             value={props.project.vehicle_name}
-            label="Project"
+            label="Select Project"
             onChange={handleChange}
           >
             <MenuItem value="">
@@ -46,7 +59,7 @@ const PageHeader = (props) => {
               ? props.projectList.map((element) => (
                   <MenuItem value={element.id}>
                     {element.company_name}-{element.vehicle_name}-
-                    {element.create_ts}
+                    {Moment(element.create_ts).format("MMM Do YY")}
                   </MenuItem>
                 ))
               : null}
@@ -54,13 +67,32 @@ const PageHeader = (props) => {
         </FormControl>
       </Grid>
       <Grid item xs={8}>
-        <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="simple table">
+        <TableContainer>
+          <Table
+            sx={{ minWidth: 650 }}
+            aria-label="simple table"
+            style={{ border: "None" }}
+          >
             <TableHead>
               <TableRow>
-                <TableCell align="center" style={{fontSize:"1.1em"}}>Total Ecus Verified</TableCell>
-                <TableCell align="center" style={{fontSize:"1.1em"}}>Total Ecus Passed</TableCell>
-                <TableCell align="center" style={{fontSize:"1.1em"}}>Total Ecus Failed</TableCell>
+                <TableCell
+                  align="center"
+                  style={{ fontSize: "2em", border: "None" }}
+                >
+                  Total Verified
+                </TableCell>
+                <TableCell
+                  align="center"
+                  style={{ fontSize: "2em", border: "None" }}
+                >
+                  Total Passed
+                </TableCell>
+                <TableCell
+                  align="center"
+                  style={{ fontSize: "2em", border: "None" }}
+                >
+                  Total Failed
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -68,11 +100,24 @@ const PageHeader = (props) => {
                 key="stat"
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
-                <TableCell align="center" style={{fontSize:"1em"}}>
+                <TableCell
+                  align="center"
+                  style={{ fontSize: "1.5em", border: "None" }}
+                >
                   {verifiedStat}
                 </TableCell>
-                <TableCell align="center" style={{fontSize:"1em"}}>{passedStat}</TableCell>
-                <TableCell align="center" style={{fontSize:"1em"}}>{failedStat}</TableCell>
+                <TableCell
+                  align="center"
+                  style={{ fontSize: "1.5em", border: "None" }}
+                >
+                  {passedStat}
+                </TableCell>
+                <TableCell
+                  align="center"
+                  style={{ fontSize: "1.5em", border: "None" }}
+                >
+                  {failedStat}
+                </TableCell>
               </TableRow>
             </TableBody>
           </Table>

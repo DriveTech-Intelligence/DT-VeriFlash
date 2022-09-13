@@ -41,6 +41,8 @@ class PDFVSRFile(VSR_File):
                 tablesDict[tablesDf['EcuName'][index]] = [(
                     tablesDf['Parameter'][index], tablesDf['Value'][index])]
             else:
+                if tempEcuName == "":
+                    continue
                 tablesDict[tempEcuName].append((
                     tablesDf['Parameter'][index], tablesDf['Value'][index]))
 
