@@ -20,8 +20,11 @@ def saveECUScanResults(db: Session, ECUScanResults):
 def get_project(db: Session, project_id: uuid.UUID):
     return db.query(models.Project).filter(models.Project.id == project_id).first()
 
-def get_project_list(db: Session, company_name: str):
-    return db.query(models.Project).filter(models.Project.company_name == company_name).all()
+def get_project_list(db: Session, filter: str):
+    if filter == 'all':
+        return db.query(models.Project).all()
+    else:
+        return db.query(models.Project).filter(models.Project.company_name == filter).all()
 
 def create_project(db: Session, project: schemas.Project):
     db_project = models.Project(id=uuid.uuid4(), company_name=project.company_name, vehicle_name=project.vehicle_name,
@@ -105,14 +108,13 @@ def get_flash_stats(db: Session, project_id):
                             "left outer join ("
                                         "SELECT vin, vin_error AS Vin_mismatch "
                                         "FROM ecu_scan "
-                                        "where project_id = :project_id "
+                                        "where verified_status = 'Fail' and project_id = :project_id "
                                         "GROUP BY vin, vin_error "
                                         "ORDER BY vin"
                                         ")as VM_ECU on P.vin = VM_ECU.vin "
-                                        "order by F.Failed desc, IF_ECU.Incorrectly_Flashed desc ")
+                                        "order by F.Failed desc, F_ECU.Failed_ECUs desc ")
     result = db.execute(statement, {"project_id":project_id}).all()
-    
+
     for record in result:
         flashStats.append(schemas.FlashStats(**record).dict())
-
     return flashStats

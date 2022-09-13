@@ -27,23 +27,23 @@ class ScanData:
                 expTup = expKV[0]
                 if expTup[1] == ref.tag_2:
                     #expected variant code matches in the key value pair in ECU Params, so No error
-                    return ""
+                    return None
                 else:
                     return "Invalid Flashing"
             else:
-                return "" # no matching key value pair found, hence cannot perform error detection
+                return None # no matching key value pair found, hence cannot perform error detection
             
         elif ref.tag_interpret.lower() == 'infilename':
             if fname.find(ref.tag_1) > -1 : #expected variant code in tag1 found in filename, NO error
-                return ""
+                return None
             else:
                 return "Invalid Flashing"
         else: # we dont have enough info for error detection 
-            return "" 
+            return None 
     
     def checkVinError(self, fname) -> str:
         if fname.find(self.__vin) != -1:
-            result = ""
+            result = None
         else:
             result = "Mismatch"
         return result
@@ -115,7 +115,7 @@ class ScanData:
                 if len(ecu_refData) > 1 :
                     flashError = self.__performErrorDetection(ref, VSR_EcuParams,fname)
                     #In case of any error treat the verified status as failed.
-                    if flashError != "" or vin_error != "":
+                    if flashError != None or vin_error != None:
                         verifiedStatus = 'Fail'
                 #break if atleast one version from refData matches with S/W ver in VSR Param values
                 break

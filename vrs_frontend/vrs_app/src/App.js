@@ -14,7 +14,7 @@ function App() {
 
   const getReportList = async () => {
     let response = await axios.post(API_GET_REPORT_LIST, {
-      company_name: "MRV",
+      filter: "all" ,
     });
     let projectList = response.data;
     setProjectList(projectList);

@@ -50,7 +50,7 @@ def createProject(project: schemas.ProjectCreate,  db: Session = Depends(get_db)
 
 @app.post("/get-project-list")
 def getProjectList(apiInput:dict,  db: Session = Depends(get_db)):
-    return crud.get_project_list(db=db, company_name=apiInput['company_name'])
+    return crud.get_project_list(db=db, filter=apiInput['filter'])
 ############################Reference#############################
 
 

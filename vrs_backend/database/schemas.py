@@ -66,5 +66,5 @@ class FlashStats(BaseModel):
     passed: int
     failed: int
     failed_ecus: str
-    incorrectly_flashed: str | None
-    vin_mismatch: str | None
+    incorrectly_flashed: str = None
+    vin_mismatch: str = None

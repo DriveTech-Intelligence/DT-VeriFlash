@@ -4,7 +4,7 @@ import axios from "axios";
 import { API_FETCH_FLASH_STATS } from "../Data/Apiservice";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import "./MTable.css";
-import { CircularProgress } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 
 const MTable = (props) => {
   const [showSpinner, setShowSpinner] = useState(false);
@@ -15,7 +15,7 @@ const MTable = (props) => {
     });
     let vsrData = response.data;
     props.setVsrData(vsrData);
-    console.log(vsrData)
+    console.log(vsrData);
     setShowSpinner(false);
   };
 
@@ -40,6 +40,14 @@ const MTable = (props) => {
             : element === "vin_mismatch"
             ? "VIN MISMATCH"
             : element.toUpperCase(),
+        type:
+          element === "failed"
+            ? "number"
+            : element === "passed"
+            ? "number"
+            : element === "verified"
+            ? "number"
+            : "string",
         align: "center",
         headerAlign: "center",
         headerClassName: "mtable",
@@ -68,7 +76,15 @@ const MTable = (props) => {
   }, [props.project]);
 
   return props.vsrData?.length && !showSpinner ? (
-    <div style={{ height: 700, width: "100%" }}>
+    <Box
+      sx={{
+        height: 700,
+        width: "100%",
+        "& .error": {
+          color: "red",
+        },
+      }}
+    >
       <DataGrid
         rows={createRows(props.vsrData)}
         columns={createColumns(props.vsrData)}
@@ -76,9 +92,23 @@ const MTable = (props) => {
         hideFooterPagination={true}
         hideFooter={true}
         disableSelectionOnClick={true}
+        getCellClassName={(params) => {
+          if (params.field === "vin_mismatch" && params.value === "Mismatch") {
+            return "error";
+          }
+          if (params.field === "failed_ecus" && params.value !== "") {
+            return "error";
+          }
+          if (params.field === "incorrectly_flashed" && params.value !== null) {
+            return "error";
+          }
+        }}
+        style={{fontSize:'1em'}}
       />
-    </div>
-  ) : showSpinner ? <CircularProgress  />:  null;
+    </Box>
+  ) : showSpinner ? (
+    <CircularProgress />
+  ) : null;
 };
 
 export default MTable;
