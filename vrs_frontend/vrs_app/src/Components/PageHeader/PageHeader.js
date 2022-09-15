@@ -4,7 +4,6 @@ import {
   Grid,
   InputLabel,
   MenuItem,
-  Paper,
   Table,
   TableBody,
   TableCell,
@@ -23,20 +22,20 @@ const PageHeader = (props) => {
   var failedEcus = 0;
   var passedEcus = 0;
   const passedStat = props.vsrData?.length
-    ? props.vsrData.map((element) => {
-        if (element["failed"] === 0) {
+    ? props.vsrData.forEach((element) => {
+        if (element["failed"] === null) {
           passedEcus = passedEcus + 1;
         }
-      }, 0) !== undefined
+      }) !== undefined
       ? passedEcus
       : 0
     : 0;
   const failedStat = props.vsrData?.length
-    ? props.vsrData.map((element) => {
-        if (element["failed"] !== 0) {
+    ? props.vsrData.forEach((element) => {
+        if (element["failed"] !== null) {
           failedEcus = failedEcus + 1;
         }
-      }, 0) !== undefined
+      }) !== undefined
       ? failedEcus
       : 0
     : 0;
@@ -51,13 +50,14 @@ const PageHeader = (props) => {
             value={props.project.vehicle_name}
             label="Select Project"
             onChange={handleChange}
+            defaultValue=""
           >
-            <MenuItem value="">
+            <MenuItem key="None" value="">
               <em>None</em>
             </MenuItem>
             {props.projectList?.length
               ? props.projectList.map((element) => (
-                  <MenuItem value={element.id}>
+                  <MenuItem key={element.id} value={element.id}>
                     {element.company_name}-{element.vehicle_name}-
                     {Moment(element.create_ts).format("MMM Do YY")}
                   </MenuItem>

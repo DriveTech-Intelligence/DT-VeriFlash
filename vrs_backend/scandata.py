@@ -65,12 +65,12 @@ class ScanData:
                 
                 evs = self.__getECUVerifyStatus(VSR_EcuParams,ecu_refData,fname, vin_error)
             
-            #populate the Data ECU_scan data structure
-            ecuscan = schemas.Ecu_scanCreate(ecu_name=ecu, vin=self.__vin, sign_found=evs.found_ver, sign_ref=evs.expected_ver,
-            verified=verified, verified_status=evs.verifiedStatus, flash_error=evs.flashError, filename=fname, project_id=uuid4(),
-            verified_ts=datetime.now(), vin_error=evs.vin_error)
-            
-            ECUScanResults.append(ecuscan)
+                #populate the Data ECU_scan data structure
+                ecuscan = schemas.Ecu_scanCreate(ecu_name=ecu, vin=self.__vin, sign_found=evs.found_ver, sign_ref=evs.expected_ver,
+                verified=verified, verified_status=evs.verifiedStatus, flash_error=evs.flashError, filename=fname, project_id=uuid4(),
+                verified_ts=datetime.now(), vin_error=evs.vin_error)
+                
+                ECUScanResults.append(ecuscan)
         return ECUScanResults
 
     def __getECUVerifyStatus(self,VSR_EcuParams,ecu_refData,fname, vin_error):

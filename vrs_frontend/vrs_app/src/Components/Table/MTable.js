@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { API_FETCH_FLASH_STATS } from "../Data/Apiservice";
+import { API_FETCH_FLASH_STATS } from "../../Data/Apiservice";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import "./MTable.css";
 import { Box, CircularProgress } from "@mui/material";

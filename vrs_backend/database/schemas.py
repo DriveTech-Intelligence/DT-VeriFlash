@@ -27,11 +27,11 @@ class Ecu_scanCreate(BaseModel):
     sign_ref: str
     verified:bool
     verified_status:str
-    flash_error:str
+    flash_error:str = None
     filename: str
     project_id: UUID
     verified_ts: datetime
-    vin_error: str
+    vin_error: str = None
 
     class Config:
         orm_mode = True
@@ -62,9 +62,28 @@ class Project(ProjectCreate):
 class FlashStats(BaseModel):
     filename: str
     id: str
-    verified: int
-    passed: int
-    failed: int
-    failed_ecus: str
+    verified: int = None
+    passed: int = None
+    failed: int = None
+    failed_ecus: str = None
     incorrectly_flashed: str = None
     vin_mismatch: str = None
+
+class UserBase(BaseModel):
+    username: str
+    company_name: str
+
+    class Config:
+        orm_mode = True
+
+class UserCreate(UserBase):
+    password: str
+
+    class Config:
+        orm_mode = True
+
+
+class User(UserBase):
+    id: int
+    class Config:
+        orm_mode = True
