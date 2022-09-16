@@ -104,6 +104,11 @@ const MTable = (props) => {
           }
         }}
         style={{fontSize:'1em'}}
+        initialState={{
+          sorting: {
+            sortModel: [{ field: 'failed', sort: 'desc' }],
+          },
+        }}
       />
     </Box>
   ) : showSpinner ? (

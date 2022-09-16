@@ -4,6 +4,7 @@ from uuid import uuid4
 from xmlrpc.client import Boolean
 from database import schemas
 from dataclasses import dataclass
+import vsr_log
 
 @dataclass
 class ECUVerifyStatus:
@@ -49,6 +50,7 @@ class ScanData:
         return result
 
     def verify(self, refData, fname):
+        vsr_log.vsrInfo(f'Verification process began for file {fname}')
         ECUScanResults = []
         fname = os.path.basename(fname)
         vin_error = self.checkVinError(fname)

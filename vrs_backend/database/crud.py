@@ -7,6 +7,7 @@ from . import models
 from . import schemas
 import passlib.hash as hash
 from fastapi.security import OAuth2PasswordBearer
+import vsr_log
 
 
 def saveECUScanResults(db: Session, ECUScanResults):
@@ -17,9 +18,11 @@ def saveECUScanResults(db: Session, ECUScanResults):
                                          verified=esr.verified, verified_ts=esr.verified_ts, flash_error=esr.flash_error,
                                          project_id=esr.project_id, vin_error=esr.vin_error)
         try:
+            vsr_log.vsrInfo("Saving Ecu scan results")
             db.add(db_ecuscandata)
             db.commit()
         except exc.IntegrityError:
+            vsr_log.vsrQueryRollback(esr.filename)
             db.rollback()
             continue
 
@@ -97,45 +100,48 @@ def get_lastECUProcessedTS(db: Session, project_id: uuid.UUID) -> schemas.Ecu_sc
 def get_flash_stats(db: Session, project_id):
     flashStats = []
     # Sequence of results in the select should be maintained in the schemas.FlashStats
-    statement = text("select P.filename,p.vin as id, V.verified, P.passed, F.Failed, F_ECU.Failed_ECUs, IF_ECU.Incorrectly_Flashed, VM_ECU.Vin_mismatch "
-                     "from "
-                     "(select filename, vin, count(verified) as Passed "
-                     "from ecu_scan "
-                     "where verified = true and verified_status = 'OK' and project_id = :project_id "
-                     "group by filename , vin"
-                     ") as P "
-                     "left join ("
-                     "select filename, vin, count(verified) as Failed "
-                     "from ecu_scan "
-                     "where verified = true and verified_status = 'Fail' and project_id = :project_id "
-                     "group by filename , vin"
-                     ") as F on P.vin = F.vin "
-                     "inner join ("
-                     "select filename, vin, count(verified) as Verified "
-                     "from ecu_scan "
-                     " where verified = true  and project_id = :project_id "
-                     " group by filename , vin"
-                     " ) as V on P.vin = V.vin "
-                     "left outer join ("
-                     "SELECT vin, STRING_AGG(ecu_name, ', ') AS Failed_ECUs "
-                     "FROM ecu_scan "
-                     "where verified_status = 'Fail' and project_id = :project_id "
-                     "GROUP BY vin"
-                     ")as F_ECU on P.vin = F_ECU.vin "
-                     "left outer join ("
-                     "SELECT vin, STRING_AGG(ecu_name, ', ') AS Incorrectly_Flashed "
-                     "FROM ecu_scan "
-                     "where verified_status = 'Fail' and flash_error != '' and project_id = :project_id "
-                     "GROUP BY vin "
-                     ")as IF_ECU on P.vin = IF_ECU.vin "
-                     "left outer join ("
-                     "SELECT vin, vin_error AS Vin_mismatch "
-                     "FROM ecu_scan "
-                     "where project_id = :project_id "
-                     "GROUP BY vin, vin_error "
-                     "ORDER BY vin"
-                     ")as VM_ECU on P.vin = VM_ECU.vin "
-                     "order by F.Failed desc, F_ECU.Failed_ECUs desc ")
+    statement = text('''select 	V.filename,V.vin as id, V.verified,
+                                case when P.passed is null THEN 0 else P.passed END,
+                                case when F.failed is null THEN 0 else F.failed END,
+                                F_ECU.Failed_ECUs, IF_ECU.Incorrectly_Flashed, VM_ECU.Vin_mismatch
+                                from
+                                    (select filename, vin, count(verified) as Verified
+                                    from ecu_scan
+                                    where verified = true and project_id = :project_id
+                                    group by filename , vin
+                                    ) as V
+                        left outer join (
+                                    select vin, count(verified) as failed
+                                    from ecu_scan
+                                    where verified = true and verified_status = 'Fail' and project_id = :project_id
+                                    group by vin
+                                    ) as F on V.vin = F.vin
+                        left outer join (
+                                    select vin, count(verified) as passed
+                                    from ecu_scan
+                                    where verified = true and verified_status = 'OK' and project_id = :project_id
+                                    group by vin
+                                    ) as P on V.vin = P.vin
+                        left outer join (
+                                    SELECT vin, STRING_AGG(ecu_name, ', ') AS Failed_ECUs
+                                    FROM ecu_scan
+                                    where verified_status = 'Fail' and project_id = :project_id
+                                    GROUP BY vin
+                                    )as F_ECU on V.vin = F_ECU.vin
+                        left outer join (
+                                    SELECT vin, STRING_AGG(ecu_name, ', ') AS Incorrectly_Flashed
+                                    FROM ecu_scan
+                                    where verified_status = 'Fail' and flash_error != '' and project_id = :project_id
+                                    GROUP BY vin
+                                    )as IF_ECU on V.vin = IF_ECU.vin
+                        left outer join (
+                                    SELECT vin, vin_error AS Vin_mismatch 
+                                    FROM ecu_scan 
+                                    where project_id = :project_id  
+                                    GROUP BY vin, vin_error 
+                                    ORDER BY vin
+                                    )as VM_ECU on P.vin = VM_ECU.vin 
+                                    order by F.failed desc, F_ECU.Failed_ECUs desc''')
     result = db.execute(statement, {"project_id": project_id}).all()
 
     for record in result:

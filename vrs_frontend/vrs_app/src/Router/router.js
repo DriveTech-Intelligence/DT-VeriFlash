@@ -8,10 +8,10 @@ function AppRouter() {
   const { auth } = useContext(AuthContext);
   return (
     <Routes>
-      <Route index element={<Login />} />
       {auth?.username && auth?.accessToken && (
         <Route path="flash-stats" element={<FlashStats />} />
       )}
+      <Route path="*" element={<Login />} />
     </Routes>
   );
 }

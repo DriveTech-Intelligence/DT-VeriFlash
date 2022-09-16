@@ -2,7 +2,7 @@ from abc import abstractmethod, ABC
 import pdfplumber
 import pandas as pd
 from scandata import ScanData
-
+import vsr_log
 
 class VSR_File(ABC):
     @abstractmethod
@@ -20,6 +20,7 @@ class PDFVSRFile(VSR_File):
         self.__filepath = filepath
 
     def loadVSR(self):
+        vsr_log.vsrInfo(f'Loading vsr for {self.__filepath}')
         pdf = pdfplumber.open(self.__filepath)
         tables = []
         tablesDict = {}

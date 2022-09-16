@@ -15,6 +15,7 @@ import Moment from "moment";
 
 const PageHeader = (props) => {
   const handleChange = (event) => {
+    console.log(event.target.value)
     props.setProject(event.target.value);
   };
 
@@ -23,7 +24,8 @@ const PageHeader = (props) => {
   var passedEcus = 0;
   const passedStat = props.vsrData?.length
     ? props.vsrData.map((element) => {
-        if (element["failed"] === null) {
+      console.log(element['failed'])
+        if (element["failed"] === 0) {
           passedEcus = passedEcus + 1;
           return passedEcus
         }
@@ -33,7 +35,7 @@ const PageHeader = (props) => {
     : 0;
   const failedStat = props.vsrData?.length
     ? props.vsrData.map((element) => {
-        if (element["failed"] !== null) {
+        if (element["failed"] !== 0) {
           failedEcus = failedEcus + 1;
           return failedEcus
         }

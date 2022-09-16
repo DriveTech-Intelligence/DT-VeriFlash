@@ -4,6 +4,7 @@ from database import crud
 from VSRFile import getScanData
 from database import schemas
 import os
+import vsr_log
 
 class FlashProject:
     def __init__(self, id) -> None:
@@ -61,6 +62,7 @@ class FlashProject:
                 sTime  = self.__getCreateTime(fpath)
                 if sTime >= lastProcessedTS :
                     VSRFiles.append(fpath)
+        print(len(files), len(VSRFiles))
         return VSRFiles
 
     def getRefData(self,db):
