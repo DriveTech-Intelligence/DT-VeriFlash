@@ -1,17 +1,17 @@
 import { API_GET_REPORT_LIST } from "../../Data/Apiservice"
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import StaticBar from "../Appbar/Appbar";
 import { Grid } from "@mui/material";
 import MTable from "../Table/MTable";
 import PageHeader from "../PageHeader/PageHeader";
-import useAuth from "../../Context/useAuth"
+import AuthContext from "../../Context/AuthProvider";
 
 const FlashStats = () => {
   const [projectList, setProjectList] = useState([]);
   const [project, setProject] = useState("");
   const [vsrData, setVsrData] = useState({});
-  const { auth } = useAuth();
+  const { auth } = useContext(AuthContext);
 
   const getReportList = async () => {
     let response = await axios.post(API_GET_REPORT_LIST, {

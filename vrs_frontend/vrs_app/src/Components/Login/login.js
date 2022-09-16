@@ -10,14 +10,18 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { Navigate } from "react-router-dom";
-import useAuth from "../../Context/useAuth";
-import { API_GET_COMPANY_BY_USERNAME, API_SIGN_IN } from "../../Data/Apiservice";
+import AuthContext from "../../Context/AuthProvider";
+import {
+  API_GET_COMPANY_BY_USERNAME,
+  API_SIGN_IN,
+} from "../../Data/Apiservice";
 import axios from "axios";
+import { useContext } from "react";
 
 const theme = createTheme();
 
-export default function SignIn() {
-  const { auth, setAuth } = useAuth();
+const Login = () => {
+  const { auth, setAuth } = useContext(AuthContext);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -32,7 +36,9 @@ export default function SignIn() {
       });
 
       if (response.status === 200) {
-        const resp = await axios.post(API_GET_COMPANY_BY_USERNAME, {user : username});
+        const resp = await axios.post(API_GET_COMPANY_BY_USERNAME, {
+          user: username,
+        });
         company = resp.data["company_name"];
 
         const accessToken = response?.data?.access_token;
@@ -41,7 +47,7 @@ export default function SignIn() {
           username,
           password,
           accessToken,
-          company
+          company,
         });
       }
     } catch (err) {
@@ -116,4 +122,6 @@ export default function SignIn() {
       </Container>
     </ThemeProvider>
   );
-}
+};
+
+export default Login

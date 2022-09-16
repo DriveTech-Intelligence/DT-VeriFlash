@@ -22,18 +22,20 @@ const PageHeader = (props) => {
   var failedEcus = 0;
   var passedEcus = 0;
   const passedStat = props.vsrData?.length
-    ? props.vsrData.forEach((element) => {
+    ? props.vsrData.map((element) => {
         if (element["failed"] === null) {
           passedEcus = passedEcus + 1;
+          return passedEcus
         }
       }) !== undefined
       ? passedEcus
       : 0
     : 0;
   const failedStat = props.vsrData?.length
-    ? props.vsrData.forEach((element) => {
+    ? props.vsrData.map((element) => {
         if (element["failed"] !== null) {
           failedEcus = failedEcus + 1;
+          return failedEcus
         }
       }) !== undefined
       ? failedEcus
