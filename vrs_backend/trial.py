@@ -30,10 +30,16 @@
 
 from bs4 import BeautifulSoup
 
-filepath = "/home/drivetech-sayali/Downloads/VSR/M62021_MCAPJ8AY9PFA00289_542022_203215.htm"
+filepath = "/home/drivetech-sayali/Downloads/VSR1/M62021_MCAPJ8AY1PFA01968_892022_165725(after).htm"
 
 with open(filepath, 'r') as f:
     contents = f.read()
     soup = BeautifulSoup(contents, 'lxml')
 
-print(soup)
+variant_code = '62 20 23 35 39 35 39 36 30 35 37 35 39 34 4F 55 54 50 55 54 44 4A 49 54 20 22 04 14 4F 0C 44 85 10 42 05 00 22 00 02 00 00 00 01 00 4F 0C 44 05 10 40 01 00 22 00 02 00 00 00 00 00 59 E8 6D F2 8C 80 08 87 61 33 08 D7 45 20 78 03 A3 1E 50 52 80 35 13 14 00 43 02 30 00 43 90 20 00 03 07 00 A4 82 10 EE 00 00 20 34 94 09 01 70 EB 5E 46 AD 40 64 28 09 C6 10 02 C0 04 29 00 E7 08 91 4C 17 60 00 49 00 0A 9A CB 2B 89 49 00 01 00 00 40 20 00 00 19 11 21 22 04 70 05 00 00 00 00 00 00 00 01 01 03 00 00 00 20 00 00 00 00 00 00 00 00 00 00 00 80 01 00 02 00 00 00 00 00 03 00 40 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'
+
+text_soup = soup.get_text()
+
+
+print(text_soup.find(variant_code))
+

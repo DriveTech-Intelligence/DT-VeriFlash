@@ -23,6 +23,7 @@ def saveECUScanResults(db: Session, ECUScanResults):
             db.commit()
         except exc.IntegrityError:
             vsr_log.vsrQueryRollback(esr.filename)
+            vsr_log.vsrInfo('\n')
             db.rollback()
             continue
 
@@ -155,11 +156,11 @@ oauth2schema = OAuth2PasswordBearer(tokenUrl="/create-token")
 JWT_SECRET = "crudJWTSecret"
 
 
-async def get_user_by_username(username: str, db: Session):
+def get_user_by_username(username: str, db: Session):
     return db.query(models.User).filter(models.User.username == username).first()
 
 
-async def create_user(user: schemas.UserCreate, db: Session):
+def create_user(user: schemas.UserCreate, db: Session):
     user_obj = models.User(id=uuid.uuid4(),
                            username=user.username, password=hash.bcrypt.hash(
         user.password), company_name=user.company_name
@@ -170,8 +171,8 @@ async def create_user(user: schemas.UserCreate, db: Session):
     return user_obj
 
 
-async def authenticate_user(username: str, password: str, db: Session):
-    user = await get_user_by_username(db=db, username=username)
+def authenticate_user(username: str, password: str, db: Session):
+    user = get_user_by_username(db=db, username=username)
 
     if not user:
         return False
@@ -182,7 +183,7 @@ async def authenticate_user(username: str, password: str, db: Session):
     return user
 
 
-async def create_token(user: models.User):
+def create_token(user: models.User):
     user_obj = schemas.User.from_orm(user)
 
     token = jwt.encode(user_obj.dict(), JWT_SECRET)
@@ -190,7 +191,7 @@ async def create_token(user: models.User):
     return dict(access_token=token, token_type="bearer")
 
 
-async def get_current_user(db, token: str = Depends(oauth2schema)):
+def get_current_user(db, token: str = Depends(oauth2schema)):
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
         user = db.query(models.User).get(payload["id"])
@@ -203,5 +204,9 @@ async def get_current_user(db, token: str = Depends(oauth2schema)):
 
 
 ################################USER-QUERIES######################################
-async def get_company_by_username(username: str, db: Session):
+def get_company_by_username(username: str, db: Session):
     return db.query(models.User).filter(models.User.username == username).first()
+
+def get_all_companies(db:Session):
+    result = [tup[0] for tup in db.query(models.User.company_name).all()]
+    return result

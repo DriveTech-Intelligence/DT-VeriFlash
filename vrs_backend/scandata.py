@@ -1,7 +1,6 @@
 from datetime import datetime
 import os
 from uuid import uuid4
-from xmlrpc.client import Boolean
 from database import schemas
 from dataclasses import dataclass
 import vsr_log
@@ -15,9 +14,10 @@ class ECUVerifyStatus:
     vin_error : str = ""
 
 class ScanData:
-    def __init__(self, vsr, vin) -> None:
+    def __init__(self, vsr, vin, fileContent=None) -> None:
         self.__vsr = vsr
         self.__vin = vin
+        self.__fileContent = fileContent
 
     def __performErrorDetection(self,ref : schemas.Reference, VSR_EcuParams,fname:str):
         if ref.tag_interpret.lower() == 'keyvalue':
@@ -36,6 +36,12 @@ class ScanData:
             
         elif ref.tag_interpret.lower() == 'infilename':
             if fname.find(ref.tag_1) > -1 : #expected variant code in tag1 found in filename, NO error
+                return None
+            else:
+                return "Invalid Flashing"
+        
+        elif ref.tag_interpret.lower() == 'infilesearch':
+            if self.__fileContent.find(ref.tag_1) > -1:
                 return None
             else:
                 return "Invalid Flashing"

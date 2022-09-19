@@ -1,8 +1,10 @@
 from abc import abstractmethod, ABC
+from timeit import timeit
 import pdfplumber
 import pandas as pd
 from scandata import ScanData
 import vsr_log
+from bs4 import BeautifulSoup
 
 class VSR_File(ABC):
     @abstractmethod
@@ -64,17 +66,21 @@ class HTMLVSRFile(VSR_File):
         headerTable = headerTable[headerTable.apply(lambda x: x.str.contains(
             "VIN:", regex=True))].dropna(how='all').reset_index(drop=True)
         vinRaw = headerTable.dropna(axis=1, how='all').iat[0, 0]
-        vin = vinRaw.split(":")
+        vin = vinRaw.split(":")[1]
 
         ecuTable = ecuTableRaw[ecuTableRaw["Can Req ID"].str.contains(
-            "No positive response when identifying the ECU") == False]
+            "No positive response when identifying the ECU") == False].reset_index()
 
         for ind in range(len(ecuTable)):
             if ecuTable['ECU'][ind] not in ecuDict.keys():
-                ecuDict[ecuTable["ECU"][ind]].append(
-                    [(key, value) for key, value in ecuTable[1].iloc[0].items() if key != "ECU"])
+                ecuDict[ecuTable["ECU"][ind]] = [(key, value) for key, value in ecuTable.iloc[ind].items() if key != "ECU"]
+        
+        with open(self.__filepath, 'r') as f:
+            contents = f.read()
+            soup = BeautifulSoup(contents, 'lxml')
+            fileContent = soup.get_text()
 
-        return ScanData(ecuDict, vin)
+        return ScanData(ecuDict, vin, fileContent)
 
 
 #global function
@@ -82,7 +88,7 @@ def getScanData(filepath, file_format):
     vsrObj = None
     if file_format == 'PDFVSRFile':
         vsrObj = PDFVSRFile(filepath)
-    elif format('HTMLVSRFile'):
+    elif file_format == 'HTMLVSRFile':
         vsrObj = HTMLVSRFile(filepath)
     if (vsrObj is not None):
         return vsrObj.loadVSR()

@@ -42,7 +42,7 @@ class Reference(Base):
     ecu_signature = Column(String(50))
     parameter_name = Column(String(50))
     verification_method = Column(String(50))
-    tag_1 = Column(String(50))
+    tag_1 = Column(String(2048))
     tag_2 = Column(String(50))
     tag_interpret = Column(String(50))
     project_id = Column(UUID(as_uuid=True))
