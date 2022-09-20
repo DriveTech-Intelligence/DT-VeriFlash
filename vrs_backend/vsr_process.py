@@ -13,7 +13,7 @@ class ReferenceData:
         elif self.rFilename.endswith(".csv"):
             return "csv"
 
-    async def create_ref(self):
+    def create_ref(self):
         extension = self.check_extension()
         if extension == "xlsx":
             df = pd.read_excel(self.rFile)
