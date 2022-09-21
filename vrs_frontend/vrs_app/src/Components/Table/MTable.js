@@ -4,32 +4,38 @@ import axios from "axios";
 import { API_FETCH_FLASH_STATS } from "../../Data/Apiservice";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import "./MTable.css";
-import { Box, CircularProgress } from "@mui/material";
+import { Box, CircularProgress, Typography, Tooltip } from "@mui/material";
 import AuthContext from "../../Context/AuthProvider";
 
 const MTable = (props) => {
   const [showSpinner, setShowSpinner] = useState(false);
+  const [error, setError] = useState(null);
   const { auth, setAuth } = React.useContext(AuthContext);
 
   const fetchvsrData = async () => {
     setShowSpinner(true);
-    let response = await axios.post(
-      API_FETCH_FLASH_STATS,
-      {
-        project_id: props.project,
-      },
-      { headers: { user_token: auth?.accessToken } }
-    );
-    if (response.status === 200){
-      let vsrData = response.data.flashStats;
-      props.setVsrData(vsrData);
+    try {
+      let response = await axios.post(
+        API_FETCH_FLASH_STATS,
+        {
+          project_id: props.project,
+        },
+        { headers: { user_token: auth?.accessToken } }
+      );
+      if (response.status === 200) {
+        let vsrData = response.data.flashStats;
+        props.setVsrData(vsrData);
+        setShowSpinner(false);
+        setAuth((prevState) => ({
+          ...prevState,
+          accessToken: response.data.token,
+        }));
+      }
+    } catch (error) {
+      console.log(error);
       setShowSpinner(false);
-      setAuth((prevState) => ({
-        ...prevState,
-        accessToken: response.data.token,
-      }));
+      setError(error.response.data.detail);
     }
-    
   };
 
   const createColumns = (vsrData) => {
@@ -72,6 +78,16 @@ const MTable = (props) => {
               (element === "failed")
             ? 100
             : 209,
+        renderCell:
+          element === "filename" || element === "failed_ecus"
+            ? (params) => (
+                <Tooltip title={params.formattedValue}>
+                  <span className="table-cell-trucate">
+                    {params.formattedValue}
+                  </span>
+                </Tooltip>
+              )
+            : null,
       });
     });
     return columns;
@@ -137,6 +153,17 @@ const MTable = (props) => {
       <span style={{ fontSize: "0.7em" }}>
         Vehicle Scan Reports are being processed...
       </span>
+    </div>
+  ) : error !== null && !showSpinner ? (
+    <div
+      style={{
+        marginLeft: "auto",
+        marginRight: "auto",
+      }}
+    >
+      <Typography component="h3" variant="h7">
+        {error}
+      </Typography>
     </div>
   ) : null;
 };

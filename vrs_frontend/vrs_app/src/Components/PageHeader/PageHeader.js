@@ -15,6 +15,7 @@ import Moment from "moment";
 
 const PageHeader = (props) => {
   const handleChange = (event) => {
+    console.log(event.target.value)
     props.setProject(event.target.value);
   };
 
@@ -25,7 +26,7 @@ const PageHeader = (props) => {
     ? props.vsrData.map((element) => {
         if (element["failed"] === 0) {
           passedEcus = passedEcus + 1;
-          return passedEcus
+          return passedEcus;
         }
       }) !== undefined
       ? passedEcus
@@ -35,7 +36,7 @@ const PageHeader = (props) => {
     ? props.vsrData.map((element) => {
         if (element["failed"] !== 0) {
           failedEcus = failedEcus + 1;
-          return failedEcus
+          return failedEcus;
         }
       }) !== undefined
       ? failedEcus
@@ -49,10 +50,9 @@ const PageHeader = (props) => {
           <InputLabel id="project-select">Select Project</InputLabel>
           <Select
             id="project-select"
-            value={props.project.vehicle_name}
+            value={props?.project || ""}
             label="Select Project"
             onChange={handleChange}
-            defaultValue=""
           >
             <MenuItem key="None" value="">
               <em>None</em>

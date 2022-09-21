@@ -116,7 +116,7 @@ def getVsrFiles(request: Request, apiInput: dict, db: Session = Depends(get_db))
         return {"flashStats": result, "token": newToken}
     except:
         raise HTTPException(
-            status_code=400, detail="Can not generate the flash stats.")
+            status_code=400, detail="Invalid data found , please check your loaded files !")
 
 
 ###################################USER###############################

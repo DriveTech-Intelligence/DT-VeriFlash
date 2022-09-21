@@ -28,6 +28,10 @@ const FlashStats = () => {
         ...prevState,
         accessToken: response.data.token,
       }));
+
+      if (projectList?.length === 1) {
+        setProject(projectList[0].id);
+      }
     }
   };
 
