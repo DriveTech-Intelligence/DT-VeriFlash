@@ -43,11 +43,9 @@ class VSR:
         date = df[0]
         ecu_df = df[1]
 
-        print(file_name)
         try:
             vin = file_name.split("_")[1]
         except IndexError:
-            print(file_name.split(".")[0])
             vin = file_name.split(".")[0]
         date = self.get_date(date,'^Date:.*')[5:]
         date = datetime.datetime.strptime(date, "%A, %B %d %Y %I:%M:%S %p")

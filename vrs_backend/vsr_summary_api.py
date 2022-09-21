@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException, UploadFile
 from flashProject import FlashProject
 from vsr_process import ReferenceData
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -14,17 +14,19 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:3001",
-    "localhost:3001",
-    "http://123:201.192.143:3001"
-    "123:201.192.143:3001"
-]
+# origins = [
+#     "http://localhost:3001",
+#     "localhost:3001",
+#     "http://123:201.192.143:3001",
+#     "123:201.192.143:3001",
+#     "192.168.1.104:3001",
+#     "http://192.168.1.104:3001"
+# ]
 
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
@@ -85,8 +87,13 @@ def createProject(project: schemas.ProjectCreate,  db: Session = Depends(get_db)
 
 
 @app.post("/get-project-list")
-def getProjectList(apiInput: dict,  db: Session = Depends(get_db)):
-    return crud.get_project_list(db=db, filter=apiInput['filter'])
+def getProjectList(request: Request, apiInput: dict,  db: Session = Depends(get_db)):
+    try:
+        newToken = crud.refresh_token(request.headers['user_token'])
+        return {"projectList": crud.get_project_list(db=db, filter=apiInput['filter']), "token": newToken}
+    except:
+        raise HTTPException(
+            status_code=400, detail="Can not get the project list.")
 ############################Reference#############################
 
 
@@ -100,15 +107,25 @@ def uploadReferencefile(file: UploadFile, project_id: UUID, db: Session = Depend
 
 
 @app.post("/get-flash-stats")
-def getVsrFiles(apiInput: dict, db: Session = Depends(get_db)):
-    proj = FlashProject(apiInput['project_id'])
-    proj.processVSRFiles(db)
-    result = proj.getFlashingStatus(db, apiInput['project_id'])
-    return result
-
+def getVsrFiles(request: Request, apiInput: dict, db: Session = Depends(get_db)):
+    try:
+        newToken = crud.refresh_token(request.headers['user_token'])
+        proj = FlashProject(apiInput['project_id'])
+        proj.processVSRFiles(db)
+        result = proj.getFlashingStatus(db, apiInput['project_id'])
+        return {"flashStats": result, "token": newToken}
+    except:
+        raise HTTPException(
+            status_code=400, detail="Can not generate the flash stats.")
 
 
 ###################################USER###############################
-@app.post("/get-company-by-username", response_model=schemas.UserBase)
-def getCompanyByUsername(apiInput: dict, db: Session = Depends(get_db)):
-    return crud.get_company_by_username(apiInput['user'], db)
+@app.post("/get-company-by-username")
+def getCompanyByUsername(request: Request, apiInput: dict, db: Session = Depends(get_db)):
+    try:
+        newToken = crud.refresh_token(request.headers['user_token'])
+        company = crud.get_company_by_username(apiInput['user'], db)
+        return {'token': newToken, "company": company[0]}
+    except:
+        raise HTTPException(
+            status_code=400, detail="Can not get the company from backend.")

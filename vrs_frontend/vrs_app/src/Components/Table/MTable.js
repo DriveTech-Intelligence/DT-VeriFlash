@@ -5,18 +5,31 @@ import { API_FETCH_FLASH_STATS } from "../../Data/Apiservice";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import "./MTable.css";
 import { Box, CircularProgress } from "@mui/material";
+import AuthContext from "../../Context/AuthProvider";
 
 const MTable = (props) => {
   const [showSpinner, setShowSpinner] = useState(false);
+  const { auth, setAuth } = React.useContext(AuthContext);
+
   const fetchvsrData = async () => {
     setShowSpinner(true);
-    let response = await axios.post(API_FETCH_FLASH_STATS, {
-      project_id: props.project,
-    });
-    let vsrData = response.data;
-    props.setVsrData(vsrData);
-    console.log(vsrData);
-    setShowSpinner(false);
+    let response = await axios.post(
+      API_FETCH_FLASH_STATS,
+      {
+        project_id: props.project,
+      },
+      { headers: { user_token: auth?.accessToken } }
+    );
+    if (response.status === 200){
+      let vsrData = response.data.flashStats;
+      props.setVsrData(vsrData);
+      setShowSpinner(false);
+      setAuth((prevState) => ({
+        ...prevState,
+        accessToken: response.data.token,
+      }));
+    }
+    
   };
 
   const createColumns = (vsrData) => {
@@ -103,16 +116,28 @@ const MTable = (props) => {
             return "error";
           }
         }}
-        style={{fontSize:'1em'}}
+        style={{ fontSize: "1em" }}
         initialState={{
           sorting: {
-            sortModel: [{ field: 'failed', sort: 'desc' }],
+            sortModel: [{ field: "failed", sort: "desc" }],
           },
         }}
       />
     </Box>
   ) : showSpinner ? (
-    <CircularProgress />
+    <div
+      style={{
+        marginLeft: "auto",
+        marginRight: "auto",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <CircularProgress style={{ marginLeft: "auto", marginRight: "auto" }} />
+      <span style={{ fontSize: "0.7em" }}>
+        Vehicle Scan Reports are being processed...
+      </span>
+    </div>
   ) : null;
 };
 

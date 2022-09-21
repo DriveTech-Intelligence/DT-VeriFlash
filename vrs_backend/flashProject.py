@@ -21,6 +21,7 @@ class FlashProject:
 
         scanDataTime = 0
         verifyTime = 0
+        saveTime = 0
         # load from db initially
         self.loadfromDB(db)
 
@@ -35,25 +36,35 @@ class FlashProject:
 
         VSRFiles = self.getFilesToProcess(lastVSRProcessedDate)
         refData = self.getRefData(db)
-        for f in VSRFiles:
-            esResults = []
+        if len(VSRFiles) > 0:
+            for f in VSRFiles:
+                esResults = []
 
-            scanStart = timeit.default_timer()
-            objScanData = getScanData(f, self.__project.file_format)
-            vsr_log.vsrInfo(f'time required for scanData to exe for fname {f} {timeit.default_timer() - scanStart}')
+                scanStart = timeit.default_timer()
+                objScanData = getScanData(f, self.__project.file_format)
+                scanDataTime += timeit.default_timer() - scanStart
+
+
+                verifyStart = timeit.default_timer()
+                scanResults = objScanData.verify(refData, f)
+                verifyTime += timeit.default_timer() - verifyStart
+                
+
+                for sR in scanResults:
+                    ecuscan = schemas.Ecu_scanCreate(ecu_name=sR.ecu_name, vin=sR.vin, sign_found=sR.sign_found, sign_ref=sR.sign_ref,
+                                                    verified=sR.verified, verified_status=sR.verified_status, flash_error=sR.flash_error, filename=sR.filename,
+                                                    project_id=self.__project_id, verified_ts=ts, vin_error=sR.vin_error)
+                    esResults.append(ecuscan)
+
+                saveStart = timeit.default_timer()
+                crud.saveECUScanResults(db, esResults)
+                saveTime += timeit.default_timer() - saveStart
+            vsr_log.vsrInfo('\n')
+            vsr_log.vsrInfo(f'time required for scanData to exe for fname {f} {scanDataTime}')
+            vsr_log.vsrInfo(f'time required for verify to exe {f} {verifyTime}')
+            vsr_log.vsrInfo(f'time required for save to exe {f} {saveTime}')
             vsr_log.vsrInfo('\n')
 
-            verifyStart = timeit.default_timer()
-            scanResults = objScanData.verify(refData, f)
-            vsr_log.vsrInfo(f'time required for verify to exe {f} {timeit.default_timer() - verifyStart}')
-            vsr_log.vsrInfo('\n')
-
-            for sR in scanResults:
-                ecuscan = schemas.Ecu_scanCreate(ecu_name=sR.ecu_name, vin=sR.vin, sign_found=sR.sign_found, sign_ref=sR.sign_ref,
-                                                 verified=sR.verified, verified_status=sR.verified_status, flash_error=sR.flash_error, filename=sR.filename,
-                                                 project_id=self.__project_id, verified_ts=ts, vin_error=sR.vin_error)
-                esResults.append(ecuscan)
-            crud.saveECUScanResults(db, esResults)
 
     def __getCreateTime(self, fpath):
         if platform.system() == 'Windows':
@@ -76,7 +87,6 @@ class FlashProject:
                 sTime = self.__getCreateTime(fpath)
                 if sTime >= lastProcessedTS:
                     VSRFiles.append(fpath)
-        print(len(files), len(VSRFiles))
         return VSRFiles
 
     def getRefData(self, db):

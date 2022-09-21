@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from timeit import timeit
+import timeit
 import pdfplumber
 import pandas as pd
 from scandata import ScanData
@@ -22,15 +22,25 @@ class PDFVSRFile(VSR_File):
         self.__filepath = filepath
 
     def loadVSR(self):
+        fOpenTime = 0
+        extractTime = 0
+        makeDictTime = 0
         vsr_log.vsrInfo(f'Loading vsr for {self.__filepath}')
+        vsr_log.vsrInfo('\n')
+
+        fOpenStart = timeit.default_timer()
         pdf = pdfplumber.open(self.__filepath)
+        fOpenTime = timeit.default_timer() - fOpenStart
+
         tables = []
         tablesDict = {}
         tempEcuName = ""
 
+        extractStart = timeit.default_timer()
         for page in pdf.pages:
             tables.extend(page.extract_table(table_settings={"vertical_strategy": "text",
                                                              "horizontal_strategy": "text"}))
+        extractTime = timeit.default_timer() - extractStart
 
         # tablesDf = pd.DataFrame([subT[:4] for subT in tables[1:]], columns=tables[0][:4])
         tablesDf = pd.DataFrame(tables[1:], columns=tables[0])
@@ -38,6 +48,7 @@ class PDFVSRFile(VSR_File):
         vin = tablesDf.loc[tablesDf['Parameter'] == 'VIN', 'Value'].iloc[0]
         # tablesDf['EcuName']=tablesDf['EcuName'].ffill()
 
+        makeDictStart = timeit.default_timer()
         for index in range(len(tablesDf)):
             if tablesDf['EcuName'][index] != "":
                 tempEcuName = tablesDf['EcuName'][index]
@@ -48,6 +59,12 @@ class PDFVSRFile(VSR_File):
                     continue
                 tablesDict[tempEcuName].append((
                     tablesDf['Parameter'][index], tablesDf['Value'][index]))
+        makeDictTime = timeit.default_timer() - makeDictStart
+
+        vsr_log.vsrInfo(f'time required for open to exe for fname {self.__filepath} {fOpenTime}')
+        vsr_log.vsrInfo(f'time required for extract to exe {self.__filepath} {extractTime}')
+        vsr_log.vsrInfo(f'time required for make dictionary to exe {self.__filepath} {makeDictTime}')
+
 
         return ScanData(tablesDict, vin)
 

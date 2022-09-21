@@ -1,4 +1,5 @@
-const API_HOST = `http://localhost`;
+// const API_HOST = `http://localhost`;
+const API_HOST = `http://192.168.1.104`
 const API_PORT = 8000;
 const API_URL = `${API_HOST}:${API_PORT}`;
 

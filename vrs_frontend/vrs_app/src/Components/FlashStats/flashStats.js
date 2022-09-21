@@ -1,4 +1,4 @@
-import { API_GET_REPORT_LIST } from "../../Data/Apiservice"
+import { API_GET_REPORT_LIST } from "../../Data/Apiservice";
 import axios from "axios";
 import { useEffect, useState, useContext } from "react";
 import StaticBar from "../Appbar/Appbar";
@@ -11,18 +11,28 @@ const FlashStats = () => {
   const [projectList, setProjectList] = useState([]);
   const [project, setProject] = useState("");
   const [vsrData, setVsrData] = useState({});
-  const { auth } = useContext(AuthContext);
+  const { auth, setAuth } = useContext(AuthContext);
 
   const getReportList = async () => {
-    let response = await axios.post(API_GET_REPORT_LIST, {
-      filter: auth?.company ? auth.company : "all",
-    });
-    let projectList = response.data;
-    setProjectList(projectList);
+    let response = await axios.post(
+      API_GET_REPORT_LIST,
+      {
+        filter: auth?.company ? auth.company : "all",
+      },
+      { headers: { user_token: auth?.accessToken } }
+    );
+    if (response.status === 200) {
+      let projectList = response.data.projectList;
+      setProjectList(projectList);
+      setAuth((prevState) => ({
+        ...prevState,
+        accessToken: response.data.token,
+      }));
+    }
   };
 
   useEffect(() => {
-      getReportList();
+    getReportList();
   }, []);
   return (
     <>
