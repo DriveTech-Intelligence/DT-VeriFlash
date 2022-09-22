@@ -124,7 +124,7 @@ def get_flash_stats(db: Session, project_id):
                                     group by vin
                                     ) as P on V.vin = P.vin
                         left outer join (
-                                    SELECT vin, STRING_AGG(ecu_name, ', ') AS Failed_ECUs
+                                    SELECT vin, STRING_AGG(ecu_name, ', ' order by ecu_name) AS Failed_ECUs
                                     FROM ecu_scan
                                     where verified_status = 'Fail' and project_id = :project_id
                                     GROUP BY vin
